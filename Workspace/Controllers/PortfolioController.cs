@@ -43,6 +43,17 @@ namespace WebApp.Controllers
         // GET: Portfolio
         public async Task<IActionResult> Index(string? message = null)
         {
+            // Simple session usage - track visit count and last visit
+            var visitCount = _sessionService.GetInt(HttpContext, "VisitCount");
+            visitCount++;
+            _sessionService.SetInt(HttpContext, "VisitCount", visitCount);
+            _sessionService.SetString(HttpContext, "LastVisit", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            
+            // Add session info to ViewBag
+            ViewBag.VisitCount = visitCount;
+            ViewBag.LastVisit = _sessionService.GetString(HttpContext, "LastVisit");
+            ViewBag.CoinsAdded = _sessionService.GetInt(HttpContext, "CoinsAdded");
+            
             // For demo, we'll only get current price for Bitcoin
             try
             {
@@ -136,7 +147,12 @@ namespace WebApp.Controllers
                 // Clear draft data on successful save
                 ClearDraftData();
                 
-                return RedirectToAction(nameof(Index), new { message = $"Successfully added {item.CoinName} to your portfolio!" });
+                // Track coins added in session
+                var coinsAdded = _sessionService.GetInt(HttpContext, "CoinsAdded");
+                coinsAdded++;
+                _sessionService.SetInt(HttpContext, "CoinsAdded", coinsAdded);
+                
+                return RedirectToAction(nameof(Index), new { message = $"Successfully added {item.CoinName} to your portfolio! (Total coins added this session: {coinsAdded})" });
             }
             
             return View(item);
@@ -159,7 +175,7 @@ namespace WebApp.Controllers
         // Clear draft data
         private void ClearDraftData()
         {
-            // Clear draft data by setting empty values
+            // For simplicity, we'll set empty values instead of implementing a Remove method
             _sessionService.SetString(HttpContext, "DraftCoinName", "");
             _sessionService.SetString(HttpContext, "DraftSymbol", "");
             _sessionService.SetString(HttpContext, "DraftQuantity", "");
