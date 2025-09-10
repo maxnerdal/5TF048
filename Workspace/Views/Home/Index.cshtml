@@ -1,8 +1,155 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Crypto Portfolio Tracker";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container-fluid">
+    <!-- Hero Section -->
+    <div class="row bg-primary text-white py-5 mb-5">
+        <div class="col-12 text-center">
+            <h1 class="display-3 fw-bold">🚀 Crypto Portfolio Tracker</h1>
+            <p class="lead fs-4">Your complete solution for cryptocurrency portfolio management</p>
+            <p class="fs-5">Track, analyze, and manage your crypto investments with real-time data</p>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="text-center mb-4">✨ Key Features</h2>
+        </div>
+    </div>
+    
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center">
+                    <div class="bg-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                        <span class="fs-3">₿</span>
+                    </div>
+                    <h5 class="card-title">Live Bitcoin Prices</h5>
+                    <p class="card-text">Get real-time Bitcoin price data from CoinGecko API with automatic updates and price tracking.</p>
+                    <a href="/BtcPrice" class="btn btn-warning">View Prices</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center">
+                    <div class="bg-success rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                        <span class="fs-3">💰</span>
+                    </div>
+                    <h5 class="card-title">Portfolio Management</h5>
+                    <p class="card-text">Add, edit, and track your cryptocurrency holdings with automatic profit/loss calculations and performance metrics.</p>
+                    <a href="/Portfolio" class="btn btn-success">Manage Portfolio</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center">
+                    <div class="bg-info rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                        <span class="fs-3">📊</span>
+                    </div>
+                    <h5 class="card-title">Smart Analytics</h5>
+                    <p class="card-text">View detailed analytics including total investment, current value, profit/loss percentages, and performance insights.</p>
+                    <a href="/Portfolio" class="btn btn-info">View Analytics</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Technology Stack Section -->
+    <div class="row bg-light py-5 mb-5">
+        <div class="col-12">
+            <h2 class="text-center mb-4">🛠️ Built With Modern Technology</h2>
+        </div>
+        <div class="col-md-6 offset-md-3">
+            <div class="row text-center">
+                <div class="col-6 col-md-3 mb-3">
+                    <div class="p-3">
+                        <div class="bg-primary text-white rounded p-2 mb-2">
+                            <strong>ASP.NET</strong>
+                        </div>
+                        <small>Core MVC</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 mb-3">
+                    <div class="p-3">
+                        <div class="bg-success text-white rounded p-2 mb-2">
+                            <strong>C#</strong>
+                        </div>
+                        <small>.NET 9.0</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 mb-3">
+                    <div class="p-3">
+                        <div class="bg-info text-white rounded p-2 mb-2">
+                            <strong>Bootstrap</strong>
+                        </div>
+                        <small>Responsive UI</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 mb-3">
+                    <div class="p-3">
+                        <div class="bg-warning text-dark rounded p-2 mb-2">
+                            <strong>API</strong>
+                        </div>
+                        <small>CoinGecko</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="text-center mb-4">📈 Application Features</h2>
+        </div>
+        <div class="col-md-3 text-center mb-3">
+            <div class="bg-primary text-white rounded p-4">
+                <h3 class="display-6 fw-bold">Real-time</h3>
+                <p class="mb-0">Price Updates</p>
+            </div>
+        </div>
+        <div class="col-md-3 text-center mb-3">
+            <div class="bg-success text-white rounded p-4">
+                <h3 class="display-6 fw-bold">CRUD</h3>
+                <p class="mb-0">Operations</p>
+            </div>
+        </div>
+        <div class="col-md-3 text-center mb-3">
+            <div class="bg-info text-white rounded p-4">
+                <h3 class="display-6 fw-bold">Auto-save</h3>
+                <p class="mb-0">Draft Forms</p>
+            </div>
+        </div>
+        <div class="col-md-3 text-center mb-3">
+            <div class="bg-warning text-dark rounded p-4">
+                <h3 class="display-6 fw-bold">Session</h3>
+                <p class="mb-0">Management</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="row bg-dark text-white py-5">
+        <div class="col-12 text-center">
+            <h2 class="mb-4">🎯 Start Managing Your Crypto Portfolio Today!</h2>
+            <p class="lead mb-4">Take control of your cryptocurrency investments with our comprehensive tracking and analysis tools.</p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <a href="/Portfolio/Create" class="btn btn-success btn-lg">
+                    <i class="bi bi-plus-circle"></i> Add Your First Coin
+                </a>
+                <a href="/Portfolio" class="btn btn-outline-light btn-lg">
+                    <i class="bi bi-graph-up"></i> View Portfolio
+                </a>
+                <a href="/BtcPrice" class="btn btn-outline-warning btn-lg">
+                    <i class="bi bi-currency-bitcoin"></i> Check BTC Price
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
