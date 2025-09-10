@@ -7,6 +7,15 @@ namespace WebApp.Models
         public DateTime LastUpdated { get; set; }
         public decimal Change24h { get; set; }
         public decimal ChangePercent24h { get; set; }
+
+        public BtcPriceModel()
+        {
+            Price = 0;
+            Currency = "USD";
+            LastUpdated = DateTime.UtcNow;
+            Change24h = 0;
+            ChangePercent24h = 0;
+        }
     }
 
     // For CoinGecko API response

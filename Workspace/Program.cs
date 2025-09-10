@@ -3,7 +3,17 @@ using WebApp.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    // Temporarily disable antiforgery validation for development
+    options.Filters.Add(new Microsoft.AspNetCore.Mvc.IgnoreAntiforgeryTokenAttribute());
+});
+
+// Add memory cache for session storage
+builder.Services.AddMemoryCache();
+
+// Register our custom session service for draft functionality
+builder.Services.AddSingleton<ISimpleSessionService, SimpleSessionService>();
 
 // Register HttpClient and BTC Price Service
 builder.Services.AddHttpClient<IBtcPriceService, BtcPriceService>();

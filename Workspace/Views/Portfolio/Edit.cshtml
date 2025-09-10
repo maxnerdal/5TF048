@@ -1,0 +1,106 @@
+@model WebApp.Models.PortfolioItem
+
+@{
+    ViewData["Title"] = "Edit " + Model.CoinName;
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h3 class="mb-0">✏️ Edit @Model.CoinName</h3>
+                </div>
+                <div class="card-body">
+                    <form action="/Portfolio/Edit/@Model.Id" method="post">
+                        <input type="hidden" name="Id" value="@Model.Id" />
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Coin Name</label>
+                                    <input name="CoinName" value="@Model.CoinName" class="form-control" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Symbol</label>
+                                    <input name="Symbol" value="@Model.Symbol" class="form-control" style="text-transform: uppercase;" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Quantity</label>
+                                    <input id="Quantity" name="Quantity" value="@Model.Quantity" class="form-control" step="0.00000001" type="number" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Buy Price</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input id="BuyPrice" name="BuyPrice" value="@Model.BuyPrice" class="form-control" step="0.01" type="number" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Date Purchased</label>
+                            <input name="DatePurchased" value="@Model.DatePurchased.ToString("yyyy-MM-dd")" class="form-control" type="date" />
+                        </div>
+
+                        <!-- Investment Preview -->
+                        <div class="card bg-light mb-3">
+                            <div class="card-body">
+                                <h6 class="card-title">💰 Updated Investment</h6>
+                                <p class="mb-0">
+                                    <span id="quantity-preview">@Model.Quantity</span> × $<span id="price-preview">@Model.BuyPrice</span> = 
+                                    <strong>$<span id="total-preview">@Model.TotalInvestment.ToString("N2")</span></strong>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-action="Index" class="btn btn-secondary me-md-2">
+                                ↩️ Back to Portfolio
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                💾 Update
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Real-time calculation preview
+        function updatePreview() {
+            const quantity = parseFloat(document.querySelector('#Quantity').value) || 0;
+            const price = parseFloat(document.querySelector('#BuyPrice').value) || 0;
+            const total = quantity * price;
+            
+            document.querySelector('#quantity-preview').textContent = quantity.toFixed(8);
+            document.querySelector('#price-preview').textContent = price.toFixed(2);
+            document.querySelector('#total-preview').textContent = total.toFixed(2);
+        }
+        
+        document.querySelector('#Quantity').addEventListener('input', updatePreview);
+        document.querySelector('#BuyPrice').addEventListener('input', updatePreview);
+        
+        // Auto-uppercase symbol
+        document.querySelector('#Symbol').addEventListener('input', function(e) {
+            e.target.value = e.target.value.toUpperCase();
+        });
+    </script>
+}

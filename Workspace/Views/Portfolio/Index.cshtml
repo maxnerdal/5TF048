@@ -1,0 +1,151 @@
+@model IEnumerable<WebApp.Models.PortfolioItem>
+
+@{
+    ViewData["Title"] = "Crypto Portfolio";
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="text-center mb-4">
+        <h1 class="display-4">💰 My Crypto Portfolio</h1>
+        <p class="lead">Track your cryptocurrency investments</p>
+    </div>
+
+    <!-- Success Message -->
+    @if (ViewBag.SuccessMessage != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @ViewBag.SuccessMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Portfolio Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">💵 Total Investment</h5>
+                    <h3>@ViewBag.TotalInvestment.ToString("C")</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">📈 Current Value</h5>
+                    <h3>@ViewBag.TotalCurrentValue.ToString("C")</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card @(ViewBag.TotalProfitLoss >= 0 ? "bg-success" : "bg-danger") text-white">
+                <div class="card-body">
+                    <h5 class="card-title">@(ViewBag.TotalProfitLoss >= 0 ? "💚" : "💔") Profit/Loss</h5>
+                    <h3>@ViewBag.TotalProfitLoss.ToString("C")</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card @(ViewBag.TotalProfitLossPercentage >= 0 ? "bg-success" : "bg-danger") text-white">
+                <div class="card-body">
+                    <h5 class="card-title">📊 Performance</h5>
+                    <h3>@ViewBag.TotalProfitLossPercentage.ToString("P2")</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add New Coin Button -->
+    <div class="mb-3">
+        <a asp-action="Create" class="btn btn-success btn-lg">
+            ➕ Add New Coin
+        </a>
+    </div>
+
+    <!-- Portfolio Table -->
+    @if (Model.Any())
+    {
+        <div class="card">
+            <div class="card-header">
+                <h5>🪙 Your Holdings</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Coin</th>
+                                <th>Symbol</th>
+                                <th>Quantity</th>
+                                <th>Buy Price</th>
+                                <th>Current Price</th>
+                                <th>Investment</th>
+                                <th>Current Value</th>
+                                <th>Profit/Loss</th>
+                                <th>%</th>
+                                <th>Date Purchased</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@item.CoinName</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">@item.Symbol</span>
+                                    </td>
+                                    <td>@item.Quantity.ToString("N8")</td>
+                                    <td>@item.BuyPrice.ToString("C")</td>
+                                    <td>@item.CurrentPrice.ToString("C")</td>
+                                    <td>@item.TotalInvestment.ToString("C")</td>
+                                    <td>@item.CurrentValue.ToString("C")</td>
+                                    <td class="@(item.ProfitLoss >= 0 ? "text-success" : "text-danger")">
+                                        <strong>@item.ProfitLoss.ToString("C")</strong>
+                                    </td>
+                                    <td class="@(item.ProfitLossPercentage >= 0 ? "text-success" : "text-danger")">
+                                        <strong>@item.ProfitLossPercentage.ToString("P2")</strong>
+                                        @if (item.ProfitLossPercentage >= 0)
+                                        {
+                                            <span>📈</span>
+                                        }
+                                        else
+                                        {
+                                            <span>📉</span>
+                                        }
+                                    </td>
+                                    <td>@item.DatePurchased.ToString("MMM dd, yyyy")</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm">
+                                                ✏️ Edit
+                                            </a>
+                                            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-sm">
+                                                🗑️ Delete
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center">
+            <div class="card">
+                <div class="card-body">
+                    <h5>🤷‍♂️ Your portfolio is empty</h5>
+                    <p>Start by adding your first cryptocurrency holding!</p>
+                    <a asp-action="Create" class="btn btn-success">Add Your First Coin</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>

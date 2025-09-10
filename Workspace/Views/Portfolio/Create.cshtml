@@ -1,0 +1,162 @@
+@model WebApp.Models.PortfolioItem
+
+@{
+    ViewData["Title"] = "Add New Coin";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">➕ Add New Cryptocurrency</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Draft Message -->
+                    @if (ViewBag.HasDraft == true)
+                    {
+                        <div class="alert alert-info alert-dismissible fade show" role="alert">
+                            <strong>📝 Draft Found!</strong> @ViewBag.DraftMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+                    
+                    <form action="/Portfolio/Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Coin Name</label>
+                                    <input name="CoinName" value="@Model.CoinName" class="form-control" placeholder="e.g., Bitcoin" required />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Symbol</label>
+                                    <input id="Symbol" name="Symbol" value="@Model.Symbol" class="form-control" placeholder="e.g., BTC" style="text-transform: uppercase;" required />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Quantity</label>
+                                    <input id="Quantity" name="Quantity" value="@Model.Quantity" class="form-control" step="0.00000001" placeholder="e.g., 0.5" type="number" min="0" required />
+                                    <div class="form-text">How many coins do you own?</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Buy Price</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input id="BuyPrice" name="BuyPrice" value="@Model.BuyPrice" class="form-control" step="0.01" placeholder="e.g., 45000.00" type="number" min="0" required />
+                                    </div>
+                                    <div class="form-text">Price per coin when purchased</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Date Purchased</label>
+                            <input name="DatePurchased" value="@(Model.DatePurchased != DateTime.MinValue ? Model.DatePurchased.ToString("yyyy-MM-dd") : "")" class="form-control" type="date" required />
+                        </div>
+
+                        <!-- Investment Preview -->
+                        <div class="card bg-light mb-3">
+                            <div class="card-body">
+                                <h6 class="card-title">💰 Investment Summary</h6>
+                                <p class="mb-0">
+                                    <span id="quantity-preview">0</span> × $<span id="price-preview">0</span> = 
+                                    <strong>$<span id="total-preview">0.00</span></strong>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-action="Index" class="btn btn-secondary me-md-2">
+                                ↩️ Back to Portfolio
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                💾 Add to Portfolio
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Real-time calculation preview
+        function updatePreview() {
+            const quantity = parseFloat(document.querySelector('#Quantity').value) || 0;
+            const price = parseFloat(document.querySelector('#BuyPrice').value) || 0;
+            const total = quantity * price;
+            
+            document.querySelector('#quantity-preview').textContent = quantity.toFixed(8);
+            document.querySelector('#price-preview').textContent = price.toFixed(2);
+            document.querySelector('#total-preview').textContent = total.toFixed(2);
+        }
+        
+        document.querySelector('#Quantity').addEventListener('input', updatePreview);
+        document.querySelector('#BuyPrice').addEventListener('input', updatePreview);
+        
+        // Initialize preview
+        updatePreview();
+        
+        // Auto-uppercase symbol
+        document.querySelector('#Symbol').addEventListener('input', function(e) {
+            e.target.value = e.target.value.toUpperCase();
+        });
+        
+        // Auto-save draft functionality
+        let draftSaveTimeout;
+        const formInputs = document.querySelectorAll('input[name="CoinName"], input[name="Symbol"], input[name="Quantity"], input[name="BuyPrice"], input[name="DatePurchased"]');
+        
+        function saveDraft() {
+            const draftData = {
+                coinName: document.querySelector('input[name="CoinName"]').value,
+                symbol: document.querySelector('input[name="Symbol"]').value,
+                quantity: parseFloat(document.querySelector('input[name="Quantity"]').value) || 0,
+                buyPrice: parseFloat(document.querySelector('input[name="BuyPrice"]').value) || 0,
+                datePurchased: document.querySelector('input[name="DatePurchased"]').value || new Date().toISOString().split('T')[0]
+            };
+            
+            // Only save if there's actual data
+            if (draftData.coinName || draftData.symbol || draftData.quantity > 0 || draftData.buyPrice > 0) {
+                fetch('/Portfolio/SaveDraft', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(draftData)
+                }).then(response => response.json())
+                  .then(data => {
+                      if (data.success) {
+                          console.log('Draft saved automatically');
+                      }
+                  });
+            }
+        }
+        
+        // Auto-save on input change (with debounce)
+        formInputs.forEach(input => {
+            input.addEventListener('input', function() {
+                clearTimeout(draftSaveTimeout);
+                draftSaveTimeout = setTimeout(saveDraft, 2000); // Save after 2 seconds of no typing
+            });
+        });
+        
+        // Save draft when user navigates away
+        window.addEventListener('beforeunload', function() {
+            saveDraft();
+        });
+    </script>
+}
