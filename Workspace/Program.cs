@@ -1,7 +1,12 @@
+using WebApp.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// Register HttpClient and BTC Price Service
+builder.Services.AddHttpClient<IBtcPriceService, BtcPriceService>();
 
 var app = builder.Build();
 

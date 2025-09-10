@@ -1,0 +1,114 @@
+@model WebApp.Models.BtcPriceModel
+
+@{
+    ViewData["Title"] = ViewBag.PageTitle ?? "Bitcoin Price";
+}
+
+<!-- Header using ViewBag -->
+<div class="text-center mb-4">
+    <h1 class="display-4">@ViewBag.PageTitle</h1>
+    <p class="lead">@ViewBag.MarketStatus</p>
+</div>
+
+<div class="container">
+    <!-- Alert Message from ViewBag -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-8">
+            <div class="alert alert-info text-center" role="alert">
+                <h5>@ViewBag.AlertMessage</h5>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main BTC Price Card (Model + ViewBag styling) -->
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h3 class="card-title mb-0">
+                        🪙 Bitcoin (BTC)
+                    </h3>
+                </div>
+                <div class="card-body text-center">
+                    <!-- Model data -->
+                    <h2 class="display-3 text-success">
+                        $@Model.Price.ToString("N2")
+                    </h2>
+                    <p class="text-muted">@Model.Currency</p>
+                    
+                    <!-- ViewBag for dynamic styling -->
+                    @if (Model.ChangePercent24h != 0)
+                    {
+                        <p class="@ViewBag.PriceColor fs-5">
+                            @ViewBag.PriceIcon @Model.ChangePercent24h.ToString("N2")% (24h)
+                        </p>
+                    }
+                    
+                    <!-- Model data -->
+                    <small class="text-muted">
+                        Last updated: @Model.LastUpdated.ToString("yyyy-MM-dd HH:mm:ss") UTC
+                    </small>
+                </div>
+                <div class="card-footer">
+                    <button id="refreshBtn" class="btn btn-primary btn-block">
+                        🔄 Refresh Price
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Info Cards using ViewBag -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>⏰ Next Update</h5>
+                </div>
+                <div class="card-body">
+                    <p>Next automatic update: <strong>@ViewBag.NextUpdateTime</strong></p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>💡 Trading Tip</h5>
+                </div>
+                <div class="card-body">
+                    <p>@ViewBag.TradingTip</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('refreshBtn').addEventListener('click', async function() {
+            const btn = this;
+            btn.disabled = true;
+            btn.innerHTML = '🔄 Loading...';
+            
+            try {
+                const response = await fetch('/BtcPrice/GetPrice');
+                const data = await response.json();
+                
+                // Update the price display
+                location.reload(); // Simple reload for now
+            } catch (error) {
+                console.error('Error fetching price:', error);
+                alert('Failed to fetch price. Please try again.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '🔄 Refresh Price';
+            }
+        });
+        
+        // Auto-refresh every 30 seconds
+        setInterval(function() {
+            document.getElementById('refreshBtn').click();
+        }, 30000);
+    </script>
+}
