@@ -1,17 +1,14 @@
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Caching.Memory;
 using System.Collections.Concurrent;
 
 namespace WebApp.Services
 {
     public class SimpleSessionService : ISimpleSessionService
     {
-        private readonly IMemoryCache _cache;
         private readonly ConcurrentDictionary<string, Dictionary<string, object>> _sessions;
 
-        public SimpleSessionService(IMemoryCache cache)
+        public SimpleSessionService()
         {
-            _cache = cache;
             _sessions = new ConcurrentDictionary<string, Dictionary<string, object>>();
         }
 

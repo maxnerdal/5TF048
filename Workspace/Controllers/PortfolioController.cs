@@ -10,29 +10,9 @@ namespace WebApp.Controllers
         private readonly ISimpleSessionService _sessionService;
         
         // In-memory storage for demo (in real app, you'd use a database)
-        private static List<PortfolioItem> _portfolio = new List<PortfolioItem>
-        {
-            new PortfolioItem 
-            { 
-                Id = 1, 
-                CoinName = "Bitcoin", 
-                Symbol = "BTC", 
-                Quantity = 0.5m, 
-                BuyPrice = 45000m, 
-                DatePurchased = DateTime.Today.AddDays(-30) 
-            },
-            new PortfolioItem 
-            { 
-                Id = 2, 
-                CoinName = "Ethereum", 
-                Symbol = "ETH", 
-                Quantity = 2.0m, 
-                BuyPrice = 3000m, 
-                DatePurchased = DateTime.Today.AddDays(-15) 
-            }
-        };
+        private static List<PortfolioItem> _portfolio = new List<PortfolioItem>();
         
-        private static int _nextId = 3;
+        private static int _nextId = 1;
 
         public PortfolioController(IBtcPriceService btcPriceService, ISimpleSessionService sessionService)
         {
@@ -43,17 +23,6 @@ namespace WebApp.Controllers
         // GET: Portfolio
         public async Task<IActionResult> Index(string? message = null)
         {
-            // Simple session usage - track visit count and last visit
-            var visitCount = _sessionService.GetInt(HttpContext, "VisitCount");
-            visitCount++;
-            _sessionService.SetInt(HttpContext, "VisitCount", visitCount);
-            _sessionService.SetString(HttpContext, "LastVisit", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-            
-            // Add session info to ViewBag
-            ViewBag.VisitCount = visitCount;
-            ViewBag.LastVisit = _sessionService.GetString(HttpContext, "LastVisit");
-            ViewBag.CoinsAdded = _sessionService.GetInt(HttpContext, "CoinsAdded");
-            
             // For demo, we'll only get current price for Bitcoin
             try
             {
@@ -147,12 +116,7 @@ namespace WebApp.Controllers
                 // Clear draft data on successful save
                 ClearDraftData();
                 
-                // Track coins added in session
-                var coinsAdded = _sessionService.GetInt(HttpContext, "CoinsAdded");
-                coinsAdded++;
-                _sessionService.SetInt(HttpContext, "CoinsAdded", coinsAdded);
-                
-                return RedirectToAction(nameof(Index), new { message = $"Successfully added {item.CoinName} to your portfolio! (Total coins added this session: {coinsAdded})" });
+                return RedirectToAction(nameof(Index), new { message = $"Successfully added {item.CoinName} to your portfolio!" });
             }
             
             return View(item);

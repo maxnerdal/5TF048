@@ -9,9 +9,6 @@ builder.Services.AddControllersWithViews(options =>
     options.Filters.Add(new Microsoft.AspNetCore.Mvc.IgnoreAntiforgeryTokenAttribute());
 });
 
-// Add memory cache for session storage
-builder.Services.AddMemoryCache();
-
 // Register our custom session service for draft functionality
 builder.Services.AddSingleton<ISimpleSessionService, SimpleSessionService>();
 
