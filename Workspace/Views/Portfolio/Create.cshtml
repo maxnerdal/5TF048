@@ -1,4 +1,4 @@
-@model WebApp.Models.PortfolioItem
+@model WebApp.Models.PortfolioItemViewModel
 
 @{
     ViewData["Title"] = "Add New Coin";
@@ -12,56 +12,43 @@
                     <h3 class="mb-0">➕ Add New Cryptocurrency</h3>
                 </div>
                 <div class="card-body">
-                    <!-- Draft Message -->
-                    @if (ViewBag.HasDraft == true)
-                    {
-                        <div class="alert alert-info alert-dismissible fade show" role="alert">
-                            <strong>📝 Draft Found!</strong> @ViewBag.DraftMessage
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    }
-                    
                     <form action="/Portfolio/Create" method="post">
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
                         
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Coin Name</label>
-                                    <input name="CoinName" value="@Model.CoinName" class="form-control" placeholder="e.g., Bitcoin" required />
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Symbol</label>
-                                    <input id="Symbol" name="Symbol" value="@Model.Symbol" class="form-control" placeholder="e.g., BTC" style="text-transform: uppercase;" required />
-                                </div>
-                            </div>
+                        <div class="mb-3">
+                            <label asp-for="AssetId" class="form-label">Digital Asset</label>
+                            <select asp-for="AssetId" asp-items="ViewBag.DigitalAssets" class="form-select" required>
+                                <option value="">-- Select a cryptocurrency --</option>
+                            </select>
+                            <span asp-validation-for="AssetId" class="text-danger"></span>
                         </div>
 
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Quantity</label>
-                                    <input id="Quantity" name="Quantity" value="@Model.Quantity" class="form-control" step="0.00000001" placeholder="e.g., 0.5" type="number" min="0" required />
+                                    <label asp-for="Quantity" class="form-label">Quantity</label>
+                                    <input asp-for="Quantity" class="form-control" step="any" placeholder="e.g., 0.5" />
                                     <div class="form-text">How many coins do you own?</div>
+                                    <span asp-validation-for="Quantity" class="text-danger"></span>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Buy Price</label>
+                                    <label asp-for="BuyPrice" class="form-label">Buy Price</label>
                                     <div class="input-group">
                                         <span class="input-group-text">$</span>
-                                        <input id="BuyPrice" name="BuyPrice" value="@Model.BuyPrice" class="form-control" step="0.01" placeholder="e.g., 45000.00" type="number" min="0" required />
+                                        <input asp-for="BuyPrice" class="form-control" step="0.01" placeholder="e.g., 45000.00" />
                                     </div>
                                     <div class="form-text">Price per coin when purchased</div>
+                                    <span asp-validation-for="BuyPrice" class="text-danger"></span>
                                 </div>
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Date Purchased</label>
-                            <input name="DatePurchased" value="@(Model.DatePurchased != DateTime.MinValue ? Model.DatePurchased.ToString("yyyy-MM-dd") : "")" class="form-control" type="date" required />
+                            <label asp-for="DatePurchased" class="form-label">Date Purchased</label>
+                            <input asp-for="DatePurchased" class="form-control" type="date" />
+                            <span asp-validation-for="DatePurchased" class="text-danger"></span>
                         </div>
 
                         <!-- Investment Preview -->
@@ -114,49 +101,6 @@
         // Auto-uppercase symbol
         document.querySelector('#Symbol').addEventListener('input', function(e) {
             e.target.value = e.target.value.toUpperCase();
-        });
-        
-        // Auto-save draft functionality
-        let draftSaveTimeout;
-        const formInputs = document.querySelectorAll('input[name="CoinName"], input[name="Symbol"], input[name="Quantity"], input[name="BuyPrice"], input[name="DatePurchased"]');
-        
-        function saveDraft() {
-            const draftData = {
-                coinName: document.querySelector('input[name="CoinName"]').value,
-                symbol: document.querySelector('input[name="Symbol"]').value,
-                quantity: parseFloat(document.querySelector('input[name="Quantity"]').value) || 0,
-                buyPrice: parseFloat(document.querySelector('input[name="BuyPrice"]').value) || 0,
-                datePurchased: document.querySelector('input[name="DatePurchased"]').value || new Date().toISOString().split('T')[0]
-            };
-            
-            // Only save if there's actual data
-            if (draftData.coinName || draftData.symbol || draftData.quantity > 0 || draftData.buyPrice > 0) {
-                fetch('/Portfolio/SaveDraft', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(draftData)
-                }).then(response => response.json())
-                  .then(data => {
-                      if (data.success) {
-                          console.log('Draft saved automatically');
-                      }
-                  });
-            }
-        }
-        
-        // Auto-save on input change (with debounce)
-        formInputs.forEach(input => {
-            input.addEventListener('input', function() {
-                clearTimeout(draftSaveTimeout);
-                draftSaveTimeout = setTimeout(saveDraft, 2000); // Save after 2 seconds of no typing
-            });
-        });
-        
-        // Save draft when user navigates away
-        window.addEventListener('beforeunload', function() {
-            saveDraft();
         });
     </script>
 }

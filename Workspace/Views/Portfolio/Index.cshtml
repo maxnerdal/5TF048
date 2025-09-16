@@ -1,4 +1,4 @@
-@model IEnumerable<WebApp.Models.PortfolioItem>
+@model IEnumerable<WebApp.Models.PortfolioItemViewModel>
 
 @{
     ViewData["Title"] = "Crypto Portfolio";
@@ -93,10 +93,10 @@
                             {
                                 <tr>
                                     <td>
-                                        <strong>@item.CoinName</strong>
+                                        <strong>@item.AssetName</strong>
                                     </td>
                                     <td>
-                                        <span class="badge bg-secondary">@item.Symbol</span>
+                                        <span class="badge bg-secondary">@item.AssetTicker</span>
                                     </td>
                                     <td>@item.Quantity.ToString("N8")</td>
                                     <td>@item.BuyPrice.ToString("C")</td>
