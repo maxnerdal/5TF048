@@ -1,0 +1,78 @@
+@model DeleteAccountViewModel
+@{
+    ViewData["Title"] = "Delete Account";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow border-danger">
+            <div class="card-header bg-danger text-white text-center">
+                <h3 class="mb-0">⚠️ Delete Account</h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-danger" role="alert">
+                    <h5 class="alert-heading">⚠️ Warning: This action cannot be undone!</h5>
+                    <p>Deleting your account will permanently remove:</p>
+                    <ul>
+                        <li>Your user profile and login credentials</li>
+                        <li>All your portfolio data and investment records</li>
+                        <li>Your account preferences and settings</li>
+                        <li>All associated data from our system</li>
+                    </ul>
+                    <hr>
+                    <p class="mb-0">Please consider downloading your data before proceeding if you need it for your records.</p>
+                </div>
+
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-warning">
+                        <ul class="mb-0">
+                            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                            {
+                                <li>@error.ErrorMessage</li>
+                            }
+                        </ul>
+                    </div>
+                }
+
+                <form asp-action="DeleteAccount" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-4">
+                        <label class="form-label"><strong>Confirm your identity</strong></label>
+                        <p class="text-muted">Please enter your password to confirm account deletion:</p>
+                        <input asp-for="Password" class="form-control" placeholder="Enter your password to confirm" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input asp-for="ConfirmDelete" class="form-check-input" />
+                            <label asp-for="ConfirmDelete" class="form-check-label">
+                                I understand that this action is permanent and cannot be undone
+                            </label>
+                            <span asp-validation-for="ConfirmDelete" class="text-danger d-block"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <a asp-action="Dashboard" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-arrow-left"></i> Cancel
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <button type="submit" class="btn btn-danger w-100" onclick="return confirm('Are you absolutely sure you want to delete your account? This cannot be undone!');">
+                                <i class="fas fa-trash"></i> Delete My Account
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

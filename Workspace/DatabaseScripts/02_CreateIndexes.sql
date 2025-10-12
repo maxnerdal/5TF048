@@ -15,4 +15,8 @@ CREATE UNIQUE INDEX [IX_DigitalAssets_Ticker] ON [DigitalAssets] ([Ticker]);
 CREATE INDEX [IX_Portfolio_UserId] ON [Portfolio] ([user_id]);
 CREATE INDEX [IX_Portfolio_AssetId] ON [Portfolio] ([asset_id]);
 
+-- Create performance indexes for MarketData
+CREATE INDEX [IX_MarketData_Symbol_TimeFrame_OpenTime] ON [MarketData] ([Symbol], [TimeFrame], [OpenTime]);
+CREATE INDEX [IX_MarketData_OpenTime] ON [MarketData] ([OpenTime]);
+
 PRINT 'Indexes created successfully!';

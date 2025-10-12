@@ -34,6 +34,11 @@ namespace WebApp.Data
         public DbSet<Portfolio> Portfolio { get; set; }
 
         /// <summary>
+        /// DbSet for MarketData table - represents historical candlestick data for backtesting
+        /// </summary>
+        public DbSet<MarketData> MarketData { get; set; }
+
+        /// <summary>
         /// Configure entity relationships and database constraints
         /// This method is called when EF Core is building the data model
         /// </summary>
@@ -125,6 +130,74 @@ namespace WebApp.Data
                 entity.HasIndex(p => p.UserId)
                       .HasDatabaseName("IX_Portfolio_UserId");
             });
+
+            // Configure MarketData entity
+            modelBuilder.Entity<MarketData>(entity =>
+            {
+                entity.ToTable("MarketData");
+                
+                entity.HasKey(e => e.Id);
+                
+                entity.Property(e => e.Id)
+                      .HasColumnName("Id")
+                      .ValueGeneratedOnAdd();
+                      
+                entity.Property(e => e.Symbol)
+                      .HasColumnName("Symbol")
+                      .HasMaxLength(20)
+                      .IsRequired();
+                      
+                entity.Property(e => e.TimeFrame)
+                      .HasColumnName("TimeFrame")
+                      .HasMaxLength(10)
+                      .IsRequired();
+                      
+                entity.Property(e => e.OpenTime)
+                      .HasColumnName("OpenTime")
+                      .IsRequired();
+                      
+                entity.Property(e => e.OpenPrice)
+                      .HasColumnName("OpenPrice")
+                      .HasColumnType("decimal(18,8)")
+                      .IsRequired();
+                      
+                entity.Property(e => e.HighPrice)
+                      .HasColumnName("HighPrice")
+                      .HasColumnType("decimal(18,8)")
+                      .IsRequired();
+                      
+                entity.Property(e => e.LowPrice)
+                      .HasColumnName("LowPrice")
+                      .HasColumnType("decimal(18,8)")
+                      .IsRequired();
+                      
+                entity.Property(e => e.ClosePrice)
+                      .HasColumnName("ClosePrice")
+                      .HasColumnType("decimal(18,8)")
+                      .IsRequired();
+                      
+                entity.Property(e => e.Volume)
+                      .HasColumnName("Volume")
+                      .HasColumnType("decimal(18,8)")
+                      .IsRequired();
+                      
+                entity.Property(e => e.CloseTime)
+                      .HasColumnName("CloseTime")
+                      .IsRequired();
+                      
+                entity.Property(e => e.CreatedAt)
+                      .HasColumnName("CreatedAt")
+                      .HasDefaultValueSql("GETUTCDATE()")
+                      .IsRequired();
+
+                // Create indexes for performance
+                entity.HasIndex(e => new { e.Symbol, e.TimeFrame, e.OpenTime })
+                      .HasDatabaseName("IX_MarketData_Symbol_TimeFrame_OpenTime");
+                      
+                entity.HasIndex(e => e.OpenTime)
+                      .HasDatabaseName("IX_MarketData_OpenTime");
+            });
+            
         }
     }
 }

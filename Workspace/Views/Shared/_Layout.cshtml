@@ -26,6 +26,9 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="BtcPrice" asp-action="Index">Bitcoin Price</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="CryptoMarket" asp-action="Top100">🚀 Top 100</a>
+                        </li>
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item">
@@ -43,6 +46,7 @@
                                     👤 @User.Identity.Name
                                 </a>
                                 <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                    <li><a class="dropdown-item" asp-controller="Account" asp-action="Dashboard">🏠 Dashboard</a></li>
                                     <li><a class="dropdown-item" asp-controller="Portfolio" asp-action="Index">💰 My Portfolio</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>

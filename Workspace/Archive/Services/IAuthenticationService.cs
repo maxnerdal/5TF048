@@ -44,13 +44,5 @@ namespace WebApp.Services
         /// <param name="username">Username</param>
         /// <returns>User if found, null otherwise</returns>
         Task<User?> GetUserByUsernameAsync(string username);
-
-        /// <summary>
-        /// Updates a user's password
-        /// </summary>
-        /// <param name="userId">User ID</param>
-        /// <param name="newPassword">New plain text password (will be hashed)</param>
-        /// <returns>True if password was updated successfully, false otherwise</returns>
-        Task<bool> UpdatePasswordAsync(int userId, string newPassword);
     }
 }

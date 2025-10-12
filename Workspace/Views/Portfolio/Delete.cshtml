@@ -1,7 +1,7 @@
-@model WebApp.Models.PortfolioItem
+@model WebApp.Models.PortfolioItemViewModel
 
 @{
-    ViewData["Title"] = "Delete " + Model.CoinName;
+    ViewData["Title"] = "Delete " + Model.AssetName;
 }
 
 <div class="container">
@@ -9,7 +9,7 @@
         <div class="col-md-8">
             <div class="card shadow border-danger">
                 <div class="card-header bg-danger text-white">
-                    <h3 class="mb-0">🗑️ Delete @Model.CoinName</h3>
+                    <h3 class="mb-0">🗑️ Delete @Model.AssetName</h3>
                 </div>
                 <div class="card-body">
                     <div class="alert alert-warning" role="alert">
@@ -22,7 +22,7 @@
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-6">
-                                    <p><strong>Coin:</strong> @Model.CoinName (@Model.Symbol)</p>
+                                    <p><strong>Asset:</strong> @Model.AssetName (@Model.AssetTicker)</p>
                                     <p><strong>Quantity:</strong> @Model.Quantity.ToString("N8")</p>
                                     <p><strong>Buy Price:</strong> @Model.BuyPrice.ToString("C")</p>
                                 </div>

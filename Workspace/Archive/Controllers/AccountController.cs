@@ -177,118 +177,6 @@ namespace WebApp.Controllers
         }
 
         /// <summary>
-        /// GET: Account/Dashboard
-        /// Shows the user dashboard after successful login
-        /// </summary>
-        [HttpGet]
-        [Authorize]
-        public IActionResult Dashboard()
-        {
-            return View();
-        }
-
-        /// <summary>
-        /// GET: Account/ChangePassword
-        /// Shows the change password form
-        /// </summary>
-        [HttpGet]
-        [Authorize]
-        public IActionResult ChangePassword()
-        {
-            return View(new ChangePasswordViewModel());
-        }
-
-        /// <summary>
-        /// POST: Account/ChangePassword
-        /// Processes password change
-        /// </summary>
-        [HttpPost]
-        [Authorize]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-            var user = await _authService.GetUserByIdAsync(userId);
-            
-            if (user == null)
-            {
-                return RedirectToAction("Login");
-            }
-
-            // Validate current password
-            var isValidPassword = await _authService.ValidateUserAsync(user.Username, model.CurrentPassword);
-            if (isValidPassword == null)
-            {
-                ModelState.AddModelError("CurrentPassword", "Current password is incorrect.");
-                return View(model);
-            }
-
-            // Update password in the database
-            var passwordUpdated = await _authService.UpdatePasswordAsync(userId, model.NewPassword);
-            if (!passwordUpdated)
-            {
-                ModelState.AddModelError(string.Empty, "Failed to update password. Please try again.");
-                return View(model);
-            }
-
-            TempData["SuccessMessage"] = "Password updated successfully!";
-            return RedirectToAction("Dashboard");
-        }
-
-        /// <summary>
-        /// GET: Account/DeleteAccount
-        /// Shows the delete account confirmation form
-        /// </summary>
-        [HttpGet]
-        [Authorize]
-        public IActionResult DeleteAccount()
-        {
-            return View(new DeleteAccountViewModel());
-        }
-
-        /// <summary>
-        /// POST: Account/DeleteAccount
-        /// Processes account deletion
-        /// </summary>
-        [HttpPost]
-        [Authorize]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteAccount(DeleteAccountViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-            var user = await _authService.GetUserByIdAsync(userId);
-            
-            if (user == null)
-            {
-                return RedirectToAction("Login");
-            }
-
-            // Validate password
-            var isValidPassword = await _authService.ValidateUserAsync(user.Username, model.Password);
-            if (isValidPassword == null)
-            {
-                ModelState.AddModelError("Password", "Password is incorrect.");
-                return View(model);
-            }
-
-            // Delete account (we need to add this method to the service)
-            // For now, we'll logout and show message
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            TempData["SuccessMessage"] = "Account deleted successfully.";
-            return RedirectToAction("Index", "Home");
-        }
-
-        /// <summary>
         /// Helper method to safely redirect to local URLs only
         /// </summary>
         private IActionResult RedirectToLocal(string? returnUrl)
@@ -297,7 +185,7 @@ namespace WebApp.Controllers
             {
                 return Redirect(returnUrl);
             }
-            return RedirectToAction("Dashboard");  // Changed to Dashboard instead of Portfolio
+            return RedirectToAction("Index", "Portfolio");
         }
     }
 }

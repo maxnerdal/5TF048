@@ -1,0 +1,298 @@
+@model WebApp.Models.MarketDataManagementViewModel
+@{
+    ViewData["Title"] = "Market Data Management";
+}
+
+<div class="container mt-4">
+    <h2><i class="fas fa-chart-line"></i> Market Data Management</h2>
+    <p class="text-muted">Manage and update historical market data for trading analysis</p>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Warning"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle"></i> @TempData["Warning"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Info"] != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <i class="fas fa-info-circle"></i> @TempData["Info"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            <i class="fas fa-exclamation-triangle"></i> @ViewBag.Error
+        </div>
+    }
+
+    <!-- Current Data Status -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fab fa-bitcoin"></i> BTC Data Status</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.LatestBtcData != null)
+                    {
+                        var dataAge = DateTime.UtcNow - Model.LatestBtcData.CloseTime;
+                        var statusClass = dataAge.TotalHours < 1 ? "text-success" : dataAge.TotalHours < 24 ? "text-warning" : "text-danger";
+                        
+                        <p><strong>Total Records:</strong> @Model.TotalBtcRecords.ToString("N0")</p>
+                        <p><strong>Data Range:</strong><br>@Model.DataRangeDisplay</p>
+                        <p><strong>Latest Price:</strong> $@Model.LatestBtcData.ClosePrice.ToString("N2")</p>
+                        <p><strong>Last Updated:</strong> @Model.LatestBtcData.CloseTime.ToString("yyyy-MM-dd HH:mm") UTC</p>
+                        
+                        <p><strong>Data Age:</strong> 
+                            <span class="@statusClass">
+                                @if (dataAge.TotalMinutes < 60)
+                                {
+                                    @($"{(int)dataAge.TotalMinutes} minutes ago")
+                                }
+                                else if (dataAge.TotalHours < 24)
+                                {
+                                    @($"{(int)dataAge.TotalHours} hours ago")
+                                }
+                                else
+                                {
+                                    @($"{(int)dataAge.TotalDays} days ago")
+                                }
+                            </span>
+                        </p>
+                    }
+                    else
+                    {
+                        <p class="text-warning"><i class="fas fa-exclamation-triangle"></i> No BTC data found in database</p>
+                        <p>Click "Load Initial Data" to start collecting historical data.</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-database"></i> Available Symbols</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.AvailableSymbols.Any())
+                    {
+                        <p>Symbols with data in database:</p>
+                        <ul class="list-unstyled">
+                            @foreach (var symbol in Model.AvailableSymbols)
+                            {
+                                <li><span class="badge bg-secondary">@symbol</span></li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No market data found</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-tools"></i> Data Management Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="d-grid">
+                                @using (Html.BeginForm("UpdateBtcHistoricalData", "MarketData", FormMethod.Post))
+                                {
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-sync-alt"></i> Update Latest
+                                    </button>
+                                }
+                                <small class="text-muted mt-1">Updates from last stored data to now</small>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <div class="d-grid">
+                                @using (Html.BeginForm("LoadCompleteHistory", "MarketData", FormMethod.Post))
+                                {
+                                    @Html.Hidden("daysBack", 30)
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-download"></i> 30 Days
+                                    </button>
+                                }
+                                <small class="text-muted mt-1">Good starting dataset (~43K records)</small>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <div class="d-grid">
+                                @using (Html.BeginForm("LoadCompleteHistory", "MarketData", FormMethod.Post))
+                                {
+                                    @Html.Hidden("daysBack", 365)
+                                    <button type="submit" class="btn btn-warning">
+                                        <i class="fas fa-history"></i> 1 Year
+                                    </button>
+                                }
+                                <small class="text-muted mt-1">⚠️ ~525K records, 5-15 minutes</small>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <div class="d-grid">
+                                @using (Html.BeginForm("LoadCompleteHistory", "MarketData", FormMethod.Post))
+                                {
+                                    @Html.Hidden("daysBack", 1095)
+                                    <button type="submit" class="btn btn-info">
+                                        <i class="fas fa-calendar-alt"></i> 3 Years
+                                    </button>
+                                }
+                                <small class="text-muted mt-1">📊 ~1.6M records, 15-30 minutes</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Massive Historical Loading Section -->
+                    <div class="row">
+                        <div class="col-12">
+                            <h6 class="text-danger">⚠️ Massive Historical Data Loading</h6>
+                            <p class="text-muted small">These options download years of data and may take 30+ minutes. Only use if you need complete historical analysis.</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="d-grid">
+                                @using (Html.BeginForm("LoadMassiveHistory", "MarketData", FormMethod.Post))
+                                {
+                                    @Html.Hidden("yearsBack", 2)
+                                    <button type="submit" class="btn btn-danger" 
+                                            onclick="return confirm('This will download 2+ years of data (~1M+ records). This may take 30+ minutes and consume significant bandwidth. Continue?')">
+                                        <i class="fas fa-database"></i> 2 Years
+                                    </button>
+                                }
+                                <small class="text-muted mt-1">🔥 ~1M records, 30-60 minutes</small>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <div class="d-grid">
+                                @using (Html.BeginForm("LoadMassiveHistory", "MarketData", FormMethod.Post))
+                                {
+                                    @Html.Hidden("yearsBack", 5)
+                                    <button type="submit" class="btn btn-danger" 
+                                            onclick="return confirm('This will download 5+ years of data (~2.6M+ records). This may take 1-2 hours and consume significant bandwidth. Continue?')">
+                                        <i class="fas fa-server"></i> 5 Years
+                                    </button>
+                                }
+                                <small class="text-muted mt-1">💀 ~2.6M records, 1-2 hours</small>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <div class="d-grid">
+                                @using (Html.BeginForm("LoadMassiveHistory", "MarketData", FormMethod.Post))
+                                {
+                                    @Html.Hidden("yearsBack", 10)
+                                    <button type="submit" class="btn btn-dark" 
+                                            onclick="return confirm('This will download ALL AVAILABLE Bitcoin data since Binance launch (~7+ years, 3.6M+ records). This may take 2+ hours. Are you absolutely sure?')">
+                                        <i class="fas fa-infinity"></i> Maximum
+                                    </button>
+                                }
+                                <small class="text-muted mt-1">☠️ ~3.6M records, 2+ hours</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Automated Updates</h6>
+                            <p class="text-muted">
+                                <i class="fas fa-info-circle"></i> 
+                                The background service automatically updates data daily. 
+                                Manual updates are useful for immediate data needs or initial setup.
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Data Storage</h6>
+                            <p class="text-muted">
+                                <i class="fas fa-info-circle"></i> 
+                                Each minute of BTC data takes ~100 bytes. A full year of minute data is approximately 50MB.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Technical Information -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> Technical Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Data Source</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>API:</strong> Binance Public API</li>
+                                <li><strong>Symbol:</strong> BTCUSDT</li>
+                                <li><strong>Timeframe:</strong> 1 minute candlesticks</li>
+                                <li><strong>Rate Limit:</strong> 100ms between requests</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Data Format</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>OHLCV:</strong> Open, High, Low, Close, Volume</li>
+                                <li><strong>Precision:</strong> 8 decimal places</li>
+                                <li><strong>Timezone:</strong> UTC</li>
+                                <li><strong>Duplicates:</strong> Automatically prevented</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Auto-refresh page every 30 seconds to show updated data
+        // setInterval(function() {
+        //     location.reload();
+        // }, 30000);
+    </script>
+}

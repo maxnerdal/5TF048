@@ -20,4 +20,12 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Exclude Archive folder from compilation -->
+    <Compile Remove="Archive/**" />
+    <Content Remove="Archive/**" />
+    <EmbeddedResource Remove="Archive/**" />
+    <None Remove="Archive/**" />
+  </ItemGroup>
+
 </Project>

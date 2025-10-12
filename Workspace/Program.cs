@@ -12,9 +12,27 @@ builder.Services.AddControllersWithViews(options =>
     options.Filters.Add(new Microsoft.AspNetCore.Mvc.IgnoreAntiforgeryTokenAttribute());
 });
 
-// Configure Entity Framework and Database
+// Get connection string from configuration
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
+// Register Entity Framework for Portfolio and BTC functionality
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(connectionString));
+
+// Register HttpClient for BTC price service
+builder.Services.AddHttpClient();
+
+// Register portfolio and BTC price services (existing functionality)
+builder.Services.AddScoped<IPortfolioService, PortfolioService>();
+builder.Services.AddScoped<IBtcPriceService, BtcPriceService>();
+
+// Register the Entity Framework-based authentication service (for AccountController)
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+
+// Register background service for daily market data updates
+// DISABLED: Uncomment the line below to enable automatic daily updates
+// builder.Services.AddHostedService<MarketDataUpdateService>();
 
 // Configure Cookie Authentication
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -32,30 +50,10 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 // Add Authorization services
 builder.Services.AddAuthorization();
 
-// Register our custom services
-builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
-builder.Services.AddScoped<IPortfolioService, PortfolioService>();
-
-// Register HttpClient and BTC Price Service
-builder.Services.AddHttpClient<IBtcPriceService, BtcPriceService>();
-
 var app = builder.Build();
 
-// Ensure database is created and apply migrations
-using (var scope = app.Services.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    try
-    {
-        context.Database.Migrate();
-    }
-    catch (Exception ex)
-    {
-        // Log the error but don't crash the application
-        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while migrating the database.");
-    }
-}
+// *** NO ENTITY FRAMEWORK MIGRATIONS NEEDED ***
+// With simplified DAL, we use direct SQL scripts instead of EF migrations
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -75,7 +73,7 @@ app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Portfolio}/{action=Index}/{id?}")
+    pattern: "{controller=Account}/{action=Login}/{id?}")
     .WithStaticAssets();
 
 

@@ -93,29 +93,6 @@ namespace WebApp.Services
                 .FirstOrDefaultAsync(u => u.Username.ToLower() == username.ToLower());
         }
 
-        public async Task<bool> UpdatePasswordAsync(int userId, string newPassword)
-        {
-            // *** READ OPERATION *** - Find the user to update
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
-            
-            if (user == null)
-                return false; // User not found
-
-            // *** UPDATE OPERATION *** - Modify user's password hash
-            user.PasswordHash = HashPassword(newPassword);
-            
-            // *** SAVE CHANGES *** - Persist the update to database
-            try
-            {
-                await _context.SaveChangesAsync();
-                return true; // Password updated successfully
-            }
-            catch
-            {
-                return false; // Update failed
-            }
-        }
-
         /// <summary>
         /// Hashes a password using SHA256 with salt. 
         /// NOTE: In production, use bcrypt, scrypt, or Argon2 for better security.

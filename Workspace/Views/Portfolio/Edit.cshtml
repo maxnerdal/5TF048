@@ -1,7 +1,7 @@
-@model WebApp.Models.PortfolioItem
+@model WebApp.Models.PortfolioItemViewModel
 
 @{
-    ViewData["Title"] = "Edit " + Model.CoinName;
+    ViewData["Title"] = "Edit " + Model.AssetName;
 }
 
 <div class="container">
@@ -9,7 +9,7 @@
         <div class="col-md-8">
             <div class="card shadow">
                 <div class="card-header bg-warning text-dark">
-                    <h3 class="mb-0">✏️ Edit @Model.CoinName</h3>
+                    <h3 class="mb-0">✏️ Edit @Model.AssetName</h3>
                 </div>
                 <div class="card-body">
                     <form action="/Portfolio/Edit/@Model.Id" method="post">
@@ -19,14 +19,14 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Coin Name</label>
-                                    <input name="CoinName" value="@Model.CoinName" class="form-control" />
+                                    <label class="form-label">Asset Name</label>
+                                    <input name="AssetName" value="@Model.AssetName" class="form-control" readonly />
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Symbol</label>
-                                    <input name="Symbol" value="@Model.Symbol" class="form-control" style="text-transform: uppercase;" />
+                                    <label class="form-label">Ticker</label>
+                                    <input name="AssetTicker" value="@Model.AssetTicker" class="form-control" style="text-transform: uppercase;" readonly />
                                 </div>
                             </div>
                         </div>
