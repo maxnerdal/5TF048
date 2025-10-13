@@ -1,0 +1,6 @@
+{
+  "deploy": {
+    "startCommand": "dotnet WebApp.dll",
+    "healthcheckPath": "/"
+  }
+}

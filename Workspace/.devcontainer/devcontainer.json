@@ -1,0 +1,25 @@
+{
+  "name": "CryptoBot Development",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "webapp",
+  "workspaceFolder": "/workspace",
+  "features": {
+    "ghcr.io/devcontainers/features/dotnet:2": {
+      "version": "9.0"
+    },
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.13"
+    }
+  },
+  "forwardPorts": [5000, 1433],
+  "postCreateCommand": "dotnet restore",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-dotnettools.csharp",
+        "ms-python.python",
+        "ms-mssql.mssql"
+      ]
+    }
+  }
+}
