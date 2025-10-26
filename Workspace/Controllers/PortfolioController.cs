@@ -125,15 +125,25 @@ namespace WebApp.Controllers
         /// <returns>Create view with empty form</returns>
         public async Task<IActionResult> Create()
         {
-            // Get available digital assets for dropdown
-            var assets = await _portfolioService.GetAvailableAssetsAsync();
-            ViewBag.DigitalAssets = new SelectList(assets, "AssetId", "Name");
-            
-            // Create a new empty portfolio item to use as form model
-            var portfolioItem = new PortfolioItemViewModel();
-            
-            // Return the create view with the empty model
-            return View(portfolioItem);
+            try
+            {
+                // Get available digital assets for dropdown
+                var assets = await _portfolioService.GetAvailableAssetsAsync();
+                ViewBag.DigitalAssets = new SelectList(assets, "Id", "Name");
+                
+                // Create a new empty portfolio item to use as form model
+                var portfolioItem = new PortfolioItemViewModel();
+                
+                // Return the create view with the empty model
+                return View(portfolioItem);
+            }
+            catch (Exception)
+            {
+                // Log the error and provide a fallback
+                ViewBag.DigitalAssets = new SelectList(new List<DigitalAsset>(), "Id", "Name");
+                ViewBag.Error = "Unable to load digital assets. Please try again later.";
+                return View(new PortfolioItemViewModel());
+            }
         }
 
         /// <summary>
@@ -156,6 +166,9 @@ namespace WebApp.Controllers
             // Step 1: Check if the submitted data passes validation rules
             if (ModelState.IsValid)
             {
+                // Debug: Log the values being submitted
+                Console.WriteLine($"Submitting: AssetId={item.AssetId}, Quantity={item.Quantity}, BuyPrice={item.BuyPrice}, DatePurchased={item.DatePurchased}");
+                
                 // Step 2: Add the new item to the database
                 var success = await _portfolioService.AddPortfolioItemAsync(item, userId);
                 
@@ -163,7 +176,7 @@ namespace WebApp.Controllers
                 {
                     // Get asset name for success message
                     var assets = await _portfolioService.GetAvailableAssetsAsync();
-                    var asset = assets.FirstOrDefault(a => a.AssetId == item.AssetId);
+                    var asset = assets.FirstOrDefault(a => a.Id == item.AssetId);
                     var assetName = asset?.Name ?? "Asset";
                     
                     // Step 3: Redirect to the portfolio list with a success message
@@ -171,14 +184,22 @@ namespace WebApp.Controllers
                 }
                 else
                 {
-                    ModelState.AddModelError("", "Failed to add item to portfolio. Please try again.");
+                    ModelState.AddModelError("", "Failed to add item to portfolio. Check the server logs for details.");
+                }
+            }
+            else
+            {
+                // Debug: Log validation errors
+                foreach (var modelError in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    Console.WriteLine($"Validation error: {modelError.ErrorMessage}");
                 }
             }
             
             // If validation failed or save failed, return to the create view with the submitted data
             // Reload the assets dropdown
             var assetsForDropdown = await _portfolioService.GetAvailableAssetsAsync();
-            ViewBag.DigitalAssets = new SelectList(assetsForDropdown, "AssetId", "Name", item.AssetId);
+            ViewBag.DigitalAssets = new SelectList(assetsForDropdown ?? new List<DigitalAsset>(), "Id", "Name", item.AssetId);
             
             return View(item);
         }
@@ -210,7 +231,7 @@ namespace WebApp.Controllers
 
             // Get available digital assets for dropdown
             var assets = await _portfolioService.GetAvailableAssetsAsync();
-            ViewBag.DigitalAssets = new SelectList(assets, "AssetId", "Name", item.AssetId);
+            ViewBag.DigitalAssets = new SelectList(assets ?? new List<DigitalAsset>(), "Id", "Name", item.AssetId);
             
             // Step 3: Return the edit view with the found item as the model
             return View(item);
@@ -250,7 +271,7 @@ namespace WebApp.Controllers
                 {
                     // Get asset name for success message
                     var assets = await _portfolioService.GetAvailableAssetsAsync();
-                    var asset = assets.FirstOrDefault(a => a.AssetId == item.AssetId);
+                    var asset = assets.FirstOrDefault(a => a.Id == item.AssetId);
                     var assetName = asset?.Name ?? "Asset";
                     
                     // Step 4: Redirect to portfolio list with success message
@@ -265,7 +286,7 @@ namespace WebApp.Controllers
             // If validation failed or save failed, return to edit form with validation errors
             // Reload the assets dropdown
             var assetsForDropdown = await _portfolioService.GetAvailableAssetsAsync();
-            ViewBag.DigitalAssets = new SelectList(assetsForDropdown, "AssetId", "Name", item.AssetId);
+            ViewBag.DigitalAssets = new SelectList(assetsForDropdown ?? new List<DigitalAsset>(), "Id", "Name", item.AssetId);
             
             return View(item);
         }

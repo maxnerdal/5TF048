@@ -1,0 +1,511 @@
+@model WebApp.Models.TradingBotsPageViewModel
+@{
+    ViewData["Title"] = "Trading Bots";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h3 class="mb-4">Trading Bots</h3>
+            
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Available Trading Bot Templates -->
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">Available Bot Templates</h6>
+                    <a href="@Url.Action("Create", "TradingBot")" class="btn btn-outline-dark btn-sm">
+                        Create New Bot
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.AvailableBots.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th><small>Bot Template</small></th>
+                                        <th><small>Strategy</small></th>
+                                        <th><small>Description</small></th>
+                                        <th><small>Created</small></th>
+                                        <th><small>Actions</small></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var bot in Model.AvailableBots)
+                                    {
+                                        <tr>
+                                            <td><small><strong>@bot.Name</strong></small></td>
+                                            <td><small>@bot.Strategy</small></td>
+                                            <td><small>@(bot.Description ?? "No description available")</small></td>
+                                            <td><small>@bot.Created.ToString("MMM dd, yyyy")</small></td>
+                                            <td>
+                                                <a href="@Url.Action("Create", "TradingBot")" class="btn btn-outline-dark btn-sm">
+                                                    <small>Create Bot</small>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="p-4 text-center text-muted">
+                            <p><small>No trading bot templates available</small></p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- User's Active Bots -->
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Your Trading Bots</h6>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.UserBots.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th><small>Bot Name</small></th>
+                                        <th><small>Strategy</small></th>
+                                        <th><small>Status</small></th>
+                                        <th><small>Weekly Amount</small></th>
+                                        <th><small>Total Budget</small></th>
+                                        <th><small>Last Run</small></th>
+                                        <th><small>Actions</small></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var userBot in Model.UserBots)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <small><strong>@userBot.Name</strong></small>
+                                            </td>
+                                            <td><small>@userBot.Strategy</small></td>
+                                            <td>
+                                                <small>@userBot.Status</small>
+                                            </td>
+                                            <td><small>$@userBot.WeeklyBuyAmount.ToString("N2")</small></td>
+                                            <td>
+                                                <small>
+                                                    @if (userBot.InvestmentAmount > 0)
+                                                    {
+                                                        @:$@userBot.InvestmentAmount.ToString("N2")
+                                                    }
+                                                    else
+                                                    {
+                                                        @:No budget
+                                                    }
+                                                </small>
+                                            </td>
+                                            <td>
+                                                @if (userBot.LastRun.HasValue)
+                                                {
+                                                    <small>@userBot.LastRun.Value.ToString("MMM dd, HH:mm")</small>
+                                                }
+                                                else
+                                                {
+                                                    <small class="text-muted">Never</small>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="d-flex gap-1" role="group">
+                                                    @if (userBot.Status == "Inactive" || userBot.Status == "Stopped" || userBot.Status == "Paused")
+                                                    {
+                                                        <form asp-action="StartBot" method="post" class="d-inline">
+                                                            <input type="hidden" name="userBotId" value="@userBot.UserBotId" />
+                                                            <button type="submit" class="btn btn-outline-dark btn-sm" title="Start Bot">
+                                                                ▶
+                                                            </button>
+                                                        </form>
+                                                    }
+                                                    
+                                                    @if (userBot.Status == "Active")
+                                                    {
+                                                        <form asp-action="PauseBot" method="post" class="d-inline">
+                                                            <input type="hidden" name="userBotId" value="@userBot.UserBotId" />
+                                                            <button type="submit" class="btn btn-outline-dark btn-sm" title="Pause Bot">
+                                                                ⏸
+                                                            </button>
+                                                        </form>
+                                                    }
+                                                    
+                                                    @if (userBot.Status != "Stopped")
+                                                    {
+                                                        <form asp-action="StopBot" method="post" class="d-inline">
+                                                            <input type="hidden" name="userBotId" value="@userBot.UserBotId" />
+                                                            <button type="submit" class="btn btn-outline-dark btn-sm" title="Stop Bot">
+                                                                ⏹
+                                                            </button>
+                                                        </form>
+                                                    }
+                                                    
+                                                    <a asp-action="Edit" asp-route-id="@userBot.UserBotId" class="btn btn-outline-dark btn-sm" title="Edit Bot">
+                                                        ✎
+                                                    </a>
+                                                    
+                                                    <button type="button" class="btn btn-outline-dark btn-sm" title="Run Backtest" 
+                                                            onclick="openBacktestModal(@userBot.UserBotId, '@userBot.Name')">
+                                                        📊
+                                                    </button>
+                                                    
+                                                    <form asp-action="DeleteBot" method="post" class="d-inline" 
+                                                          onsubmit="return confirm('Are you sure you want to delete this bot? This action cannot be undone.')">
+                                                        <input type="hidden" name="userBotId" value="@userBot.UserBotId" />
+                                                        <button type="submit" class="btn btn-outline-dark btn-sm" title="Delete Bot">
+                                                            🗑
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="p-4 text-center text-muted">
+                            <p><small>You haven't created any trading bots yet</small></p>
+                            <a href="@Url.Action("Create", "TradingBot")" class="btn btn-outline-dark btn-sm">
+                                Create Your First Bot
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trading Sessions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Recent Trading Sessions</h6>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.TradingSessions.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th><small>Bot Name</small></th>
+                                        <th><small>Mode</small></th>
+                                        <th><small>Start Time</small></th>
+                                        <th><small>End Time</small></th>
+                                        <th><small>Status</small></th>
+                                        <th><small>Initial Balance</small></th>
+                                        <th><small>Final Balance</small></th>
+                                        <th><small>ROI %</small></th>
+                                        <th><small>Trades</small></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var session in Model.TradingSessions)
+                                    {
+                                        <tr class="clickable-row" onclick="window.location='@Url.Action("SessionDetails", new { sessionId = session.SessionId })'">
+                                            <td><small>@session.UserBotName</small></td>
+                                            <td>
+                                                <small>@session.Mode</small>
+                                            </td>
+                                            <td>
+                                                <small>@session.StartTime.ToString("MMM dd, yyyy HH:mm")</small>
+                                            </td>
+                                            <td>
+                                                @if (session.EndTime.HasValue)
+                                                {
+                                                    <small>@session.EndTime.Value.ToString("MMM dd, yyyy HH:mm")</small>
+                                                }
+                                                else
+                                                {
+                                                    <small class="text-muted">Running</small>
+                                                }
+                                            </td>
+                                            <td>
+                                                <small>@session.Status</small>
+                                            </td>
+                                            <td><small>$@session.InitialBalance.ToString("N2")</small></td>
+                                            <td>
+                                                @if (session.FinalBalance.HasValue)
+                                                {
+                                                    <small>$@session.FinalBalance.Value.ToString("N2")</small>
+                                                }
+                                                else
+                                                {
+                                                    <small class="text-muted">-</small>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (session.ROI.HasValue)
+                                                {
+                                                    <small>@session.ROI.Value.ToString("N2")%</small>
+                                                }
+                                                else
+                                                {
+                                                    <small class="text-muted">-</small>
+                                                }
+                                            </td>
+                                            <td><small>@session.TotalTrades</small></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="p-4 text-center text-muted">
+                            <p><small>No trading sessions yet</small></p>
+                            <small>Start a trading bot to begin creating sessions</small>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Bot Modal -->
+<div class="modal fade" id="createBotModal" tabindex="-1" aria-labelledby="createBotModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form asp-action="CreateUserBot" method="post">
+                <div class="modal-header">
+                    <h6 class="modal-title" id="createBotModalLabel">Create Trading Bot</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label asp-for="CreateUserBot.BotId" class="form-label">Bot Template</label>
+                        <select asp-for="CreateUserBot.BotId" class="form-select" id="botTemplateSelect" required>
+                            <option value="">Select a bot template...</option>
+                            @foreach (var bot in Model.AvailableBots)
+                            {
+                                <option value="@bot.BotId" data-strategy="@bot.Strategy">@bot.Name (@bot.Strategy)</option>
+                            }
+                        </select>
+                        <span asp-validation-for="CreateUserBot.BotId" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="CreateUserBot.Name" class="form-label">Bot Name</label>
+                        <input asp-for="CreateUserBot.Name" class="form-control" placeholder="My Bitcoin DCA Bot" required />
+                        <span asp-validation-for="CreateUserBot.Name" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="CreateUserBot.WeeklyBuyAmount" class="form-label">Weekly Investment ($)</label>
+                                <input asp-for="CreateUserBot.WeeklyBuyAmount" type="number" step="0.01" min="1" max="10000" 
+                                       class="form-control" placeholder="50.00" required />
+                                <span asp-validation-for="CreateUserBot.WeeklyBuyAmount" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="CreateUserBot.InvestmentAmount" class="form-label">Total Budget ($)</label>
+                                <input asp-for="CreateUserBot.InvestmentAmount" type="number" step="0.01" min="10" max="1000000" 
+                                       class="form-control" placeholder="1000.00" required />
+                                <span asp-validation-for="CreateUserBot.InvestmentAmount" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="CreateUserBot.StartDay" class="form-label">Start Day</label>
+                                <select asp-for="CreateUserBot.StartDay" class="form-select" required>
+                                    <option value="0">Monday</option>
+                                    <option value="1">Tuesday</option>
+                                    <option value="2">Wednesday</option>
+                                    <option value="3">Thursday</option>
+                                    <option value="4">Friday</option>
+                                    <option value="5">Saturday</option>
+                                    <option value="6">Sunday</option>
+                                </select>
+                                <span asp-validation-for="CreateUserBot.StartDay" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="CreateUserBot.RiskLevel" class="form-label">Risk Level</label>
+                                <select asp-for="CreateUserBot.RiskLevel" class="form-select" required>
+                                    <option value="Low">Low</option>
+                                    <option value="Medium" selected>Medium</option>
+                                    <option value="High">High</option>
+                                </select>
+                                <span asp-validation-for="CreateUserBot.RiskLevel" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="CreateUserBot.DCAFrequency" class="form-label">DCA Frequency</label>
+                        <select asp-for="CreateUserBot.DCAFrequency" class="form-select" required>
+                            <option value="Daily">Daily</option>
+                            <option value="Weekly" selected>Weekly</option>
+                            <option value="Monthly">Monthly</option>
+                        </select>
+                        <div class="form-text">How often should the bot buy Bitcoin?</div>
+                        <span asp-validation-for="CreateUserBot.DCAFrequency" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="CreateUserBot.Parameters" class="form-label">Additional Parameters (Optional)</label>
+                        <textarea asp-for="CreateUserBot.Parameters" class="form-control" rows="3" 
+                                  placeholder='{"stop_loss": 0.1, "take_profit": 0.2}'></textarea>
+                        <div class="form-text">JSON format for advanced configuration</div>
+                        <span asp-validation-for="CreateUserBot.Parameters" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Trading Bot</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Backtest Modal -->
+<div class="modal fade" id="backtestModal" tabindex="-1" aria-labelledby="backtestModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="RunBacktest" method="post">
+                <div class="modal-header">
+                    <h6 class="modal-title" id="backtestModalLabel">Run Historical Backtest</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="backtestUserBotId" name="UserBotId" />
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Trading Bot</label>
+                        <input type="text" id="backtestBotName" class="form-control" readonly />
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="bi bi-calendar-range"></i>
+                        <strong>Available Data Range:</strong> @ViewBag.EarliestDate to @ViewBag.LatestDate
+                        <br><small>You can only backtest within this date range where we have historical Bitcoin price data.</small>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="backtestStartDate" class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="backtestStartDate" name="StartDate" 
+                                       min="@ViewBag.EarliestDate" max="@ViewBag.LatestDate" required />
+                                <div class="form-text">Choose when to start the backtest</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="backtestEndDate" class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="backtestEndDate" name="EndDate" 
+                                       min="@ViewBag.EarliestDate" max="@ViewBag.LatestDate" required />
+                                <div class="form-text">Choose when to end the backtest</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Note:</strong> The backtest will simulate your bot's trading strategy using historical Bitcoin price data. 
+                        Results will show how your bot would have performed during the selected period.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-play-circle"></i> Run Backtest
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function selectBotTemplate(botId, name, strategy) {
+            document.getElementById('botTemplateSelect').value = botId;
+            document.getElementById('CreateUserBot_Name').value = name + ' - My Bot';
+            
+            // Show the modal
+            var modal = new bootstrap.Modal(document.getElementById('createBotModal'));
+            modal.show();
+        }
+
+        function openBacktestModal(userBotId, botName) {
+            document.getElementById('backtestUserBotId').value = userBotId;
+            document.getElementById('backtestBotName').value = botName;
+            
+            // Set default dates (last 30 days)
+            const endDate = new Date();
+            endDate.setDate(endDate.getDate() - 1); // Yesterday
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() - 30); // 30 days ago
+            
+            document.getElementById('backtestStartDate').value = startDate.toISOString().split('T')[0];
+            document.getElementById('backtestEndDate').value = endDate.toISOString().split('T')[0];
+            
+            // Show the modal
+            var modal = new bootstrap.Modal(document.getElementById('backtestModal'));
+            modal.show();
+        }
+
+        // Auto-calculate total weeks based on weekly amount and total budget
+        document.getElementById('CreateUserBot_WeeklyBuyAmount').addEventListener('input', calculateWeeks);
+        document.getElementById('CreateUserBot_InvestmentAmount').addEventListener('input', calculateWeeks);
+
+        function calculateWeeks() {
+            const weekly = parseFloat(document.getElementById('CreateUserBot_WeeklyBuyAmount').value) || 0;
+            const total = parseFloat(document.getElementById('CreateUserBot_InvestmentAmount').value) || 0;
+            
+            if (weekly > 0 && total > 0) {
+                const weeks = Math.floor(total / weekly);
+                const infoElement = document.getElementById('weeksInfo');
+                if (!infoElement) {
+                    const info = document.createElement('div');
+                    info.id = 'weeksInfo';
+                    info.className = 'form-text text-info';
+                    document.getElementById('CreateUserBot_InvestmentAmount').parentNode.appendChild(info);
+                }
+                document.getElementById('weeksInfo').textContent = `This will run for approximately ${weeks} weeks`;
+            }
+        }
+    </script>
+}

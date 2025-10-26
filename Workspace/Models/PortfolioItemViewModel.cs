@@ -8,13 +8,13 @@ namespace WebApp.Models
     /// </summary>
     public class PortfolioItemViewModel
     {
-        public int Id { get; set; }
+        public long Id { get; set; }
         
-        public int UserId { get; set; }
+        public long UserId { get; set; }
         
         [Required(ErrorMessage = "Asset is required")]
         [Display(Name = "Digital Asset")]
-        public int AssetId { get; set; }
+        public long AssetId { get; set; }
         
         [Display(Name = "Asset Name")]
         public string AssetName { get; set; } = string.Empty;

@@ -15,7 +15,7 @@ namespace WebApp.Models
         /// </summary>
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
+        public long Id { get; set; }
         
         /// <summary>
         /// User's email address - must be unique across all users
@@ -50,8 +50,8 @@ namespace WebApp.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// Navigation property for user's portfolio items
+        /// Navigation property for user's portfolios
         /// </summary>
-        public virtual ICollection<Portfolio> PortfolioItems { get; set; } = new List<Portfolio>();
+        public virtual ICollection<Portfolio> Portfolios { get; set; } = new List<Portfolio>();
     }
 }

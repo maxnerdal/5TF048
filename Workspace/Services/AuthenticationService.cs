@@ -128,6 +128,21 @@ namespace WebApp.Services
         }
 
         /// <summary>
+        /// Gets the currently authenticated user from the HTTP context
+        /// </summary>
+        public async Task<User?> GetCurrentUserAsync(Microsoft.AspNetCore.Http.HttpContext httpContext)
+        {
+            if (httpContext.User?.Identity?.IsAuthenticated != true)
+                return null;
+
+            var username = httpContext.User.Identity.Name;
+            if (string.IsNullOrEmpty(username))
+                return null;
+
+            return await GetUserByUsernameAsync(username);
+        }
+
+        /// <summary>
         /// Verifies a password against its hash
         /// </summary>
         private static bool VerifyPassword(string password, string hash)

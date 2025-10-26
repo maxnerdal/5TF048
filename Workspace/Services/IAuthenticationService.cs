@@ -52,5 +52,12 @@ namespace WebApp.Services
         /// <param name="newPassword">New plain text password (will be hashed)</param>
         /// <returns>True if password was updated successfully, false otherwise</returns>
         Task<bool> UpdatePasswordAsync(int userId, string newPassword);
+
+        /// <summary>
+        /// Gets the currently authenticated user from the HTTP context
+        /// </summary>
+        /// <param name="httpContext">HTTP context containing user claims</param>
+        /// <returns>Current user if authenticated, null otherwise</returns>
+        Task<User?> GetCurrentUserAsync(Microsoft.AspNetCore.Http.HttpContext httpContext);
     }
 }

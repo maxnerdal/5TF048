@@ -7,7 +7,7 @@ namespace WebApp.Models
     public class DigitalAsset
     {
         [Key]
-        public int AssetId { get; set; }
+        public long Id { get; set; }
 
         [Required]
         [StringLength(100)]
@@ -15,9 +15,10 @@ namespace WebApp.Models
 
         [Required]
         [StringLength(10)]
-        public string Ticker { get; set; } = string.Empty;
+        [Column("Symbol")]
+        public string Symbol { get; set; } = string.Empty;
 
-        // Navigation property for portfolios
-        public virtual ICollection<Portfolio> Portfolios { get; set; } = new List<Portfolio>();
+        // Navigation property for portfolio items that use this asset
+        public virtual ICollection<PortfolioItem> PortfolioItems { get; set; } = new List<PortfolioItem>();
     }
 }

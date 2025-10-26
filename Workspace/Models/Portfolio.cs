@@ -3,40 +3,27 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WebApp.Models
 {
-    [Table("Portfolio")]
+    [Table("Portfolios")]
     public class Portfolio
     {
         [Key]
-        public int Id { get; set; }
+        public long Id { get; set; }
 
         [Required]
-        [Column("user_id")]
-        public int UserId { get; set; }
+        public long UserId { get; set; }
 
         [Required]
-        [Column("asset_id")]
-        public int AssetId { get; set; }
+        [StringLength(100)]
+        public string Name { get; set; } = string.Empty;
 
-        [Required]
-        [Column("qty", TypeName = "decimal(18,8)")]
-        public decimal Quantity { get; set; }
+        [StringLength(500)]
+        public string? Description { get; set; }
 
-        [Required]
-        [Column("buyprice", TypeName = "decimal(18,8)")]
-        public decimal BuyPrice { get; set; }
-
-        [Required]
-        [Column("datepurchased")]
-        public DateTime DatePurchased { get; set; }
-
-        [Column("datelastupdate")]
-        public DateTime DateLastUpdate { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation properties
-        [ForeignKey("UserId")]
         public virtual User User { get; set; } = null!;
-
-        [ForeignKey("AssetId")]
-        public virtual DigitalAsset DigitalAsset { get; set; } = null!;
+        public virtual ICollection<PortfolioItem> PortfolioItems { get; set; } = new List<PortfolioItem>();
     }
 }

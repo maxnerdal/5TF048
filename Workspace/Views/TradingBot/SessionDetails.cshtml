@@ -1,0 +1,558 @@
+@model WebApp.Controllers.SessionDetailsViewModel
+@{
+    ViewData["Title"] = "Trading Session Details";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3>Trading Session Details</h3>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a asp-action="Index">Trading Bots</a></li>
+                            <li class="breadcrumb-item active"><small>Session #@Model.Session.SessionId</small></li>
+                        </ol>
+                    </nav>
+                </div>
+                <a asp-action="Index" class="btn btn-outline-dark btn-sm">
+                    Back to Trading Bots
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Session Overview -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Session Overview</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <table class="table table-borderless table-sm">
+                                <tr>
+                                    <td><small><strong>Bot Name:</strong></small></td>
+                                    <td><small>@Model.Session.UserBot?.Name</small></td>
+                                </tr>
+                                <tr>
+                                    <td><small><strong>Session ID:</strong></small></td>
+                                    <td><small>#@Model.Session.SessionId</small></td>
+                                </tr>
+                                <tr>
+                                    <td><small><strong>Mode:</strong></small></td>
+                                    <td><small>@Model.Session.Mode</small></td>
+                                </tr>
+                                <tr>
+                                    <td><small><strong>Status:</strong></small></td>
+                                    <td><small>@Model.Session.Status</small></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-4">
+                            <table class="table table-borderless table-sm">
+                                <tr>
+                                    <td><small><strong>Start Time:</strong></small></td>
+                                    <td><small>@Model.Session.StartTime.ToString("MMM dd, yyyy HH:mm:ss")</small></td>
+                                </tr>
+                                <tr>
+                                    <td><small><strong>End Time:</strong></small></td>
+                                    <td>
+                                        @if (Model.Session.EndTime.HasValue)
+                                        {
+                                            <small>@Model.Session.EndTime.Value.ToString("MMM dd, yyyy HH:mm:ss")</small>
+                                        }
+                                        else
+                                        {
+                                            <small class="text-muted">Still running</small>
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><small><strong>Duration:</strong></small></td>
+                                    <td>
+                                        <small>
+                                        @{
+                                            var endTime = Model.Session.EndTime ?? DateTime.UtcNow;
+                                            var duration = endTime - Model.Session.StartTime;
+                                        }
+                                        @if (duration.TotalDays >= 1)
+                                        {
+                                            @($"{(int)duration.TotalDays} days, {duration.Hours}h {duration.Minutes}m")
+                                        }
+                                        else if (duration.TotalHours >= 1)
+                                        {
+                                            @($"{duration.Hours}h {duration.Minutes}m")
+                                        }
+                                        else
+                                        {
+                                            @($"{duration.Minutes}m {duration.Seconds}s")
+                                        }
+                                        </small>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><small><strong>Number of Trades:</strong></small></td>
+                                    <td><small>@Model.Trades.Count</small></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-4">
+                            <table class="table table-borderless table-sm">
+                                <tr>
+                                    <td><small><strong>Initial Balance:</strong></small></td>
+                                    <td><small>$@Model.Session.InitialBalance.ToString("N2")</small></td>
+                                </tr>
+                                @if (Model.Session.FinalBalance.HasValue)
+                                {
+                                    <tr>
+                                        <td><small><strong>Final Balance:</strong></small></td>
+                                        <td><small>$@Model.Session.FinalBalance.Value.ToString("N2")</small></td>
+                                    </tr>
+                                    var balanceChange = Model.Session.FinalBalance.Value - Model.Session.InitialBalance;
+                                    <tr>
+                                        <td><small><strong>Balance Change:</strong></small></td>
+                                        <td><small>@(balanceChange >= 0 ? "+" : "")$@balanceChange.ToString("N2")</small></td>
+                                    </tr>
+                                }
+                                @if (Model.Trades.Any())
+                                {
+                                    <tr>
+                                        <td><small><strong>Average Trade Size:</strong></small></td>
+                                        <td><small>$@Model.Trades.Average(t => t.Value).ToString("N2")</small></td>
+                                    </tr>
+                                    <tr>
+                                        <td><small><strong>Total Volume:</strong></small></td>
+                                        <td><small>$@Model.Trades.Sum(t => t.Value).ToString("N2")</small></td>
+                                    </tr>
+                                }
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Metrics -->
+    @if (Model.Metrics != null)
+    {
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Performance Metrics</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-2">
+                                <div class="metric-card">
+                                    <div class="metric-value"><small>$@Model.Metrics.TotalInvested.ToString("N2")</small></div>
+                                    <div class="metric-label"><small>Total Invested</small></div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="metric-card">
+                                    <div class="metric-value"><small>$@Model.Metrics.TotalValue.ToString("N2")</small></div>
+                                    <div class="metric-label"><small>Current Value</small></div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="metric-card">
+                                    @{
+                                        var profitLoss = Model.Metrics.TotalValue - Model.Metrics.TotalInvested;
+                                        var profitSign = profitLoss >= 0 ? "+" : "";
+                                    }
+                                    <div class="metric-value"><small>@profitSign$@profitLoss.ToString("N2")</small></div>
+                                    <div class="metric-label"><small>Profit/Loss</small></div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="metric-card">
+                                    @{
+                                        var roiSign = Model.Metrics.ROI >= 0 ? "+" : "";
+                                    }
+                                    <div class="metric-value"><small>@roiSign@Model.Metrics.ROI.ToString("N2")%</small></div>
+                                    <div class="metric-label"><small>ROI</small></div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="metric-card">
+                                    <div class="metric-value"><small>@Model.Metrics.TotalTrades</small></div>
+                                    <div class="metric-label"><small>Total Trades</small></div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="metric-card">
+                                    @if (Model.Metrics.WinRate.HasValue)
+                                    {
+                                        <div class="metric-value"><small>@Model.Metrics.WinRate.Value.ToString("N1")%</small></div>
+                                    }
+                                    else
+                                    {
+                                        <div class="metric-value text-muted"><small>N/A</small></div>
+                                    }
+                                    <div class="metric-label"><small>Win Rate</small></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Trades Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">Trade History</h6>
+                    <small>@Model.Trades.Count trades</small>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.Trades.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th><small>Trade ID</small></th>
+                                        <th><small>Timestamp</small></th>
+                                        <th><small>Symbol</small></th>
+                                        <th><small>Side</small></th>
+                                        <th><small>Price</small></th>
+                                        <th><small>Quantity</small></th>
+                                        <th><small>Value</small></th>
+                                        <th><small>Fee</small></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var trade in Model.Trades)
+                                    {
+                                        <tr>
+                                            <td><small>#@trade.TradeId</small></td>
+                                            <td>
+                                                <small>@trade.Timestamp.ToString("yyyy-MM-dd, HH:mm:ss")</small>
+                                            </td>
+                                            <td>
+                                                <small>@trade.Symbol</small>
+                                            </td>
+                                            <td>
+                                                <small>@trade.Side</small>
+                                            </td>
+                                            <td><small>$@trade.Price.ToString("N8")</small></td>
+                                            <td><small>@trade.Quantity.ToString("N8")</small></td>
+                                            <td><small>$@trade.Value.ToString("N2")</small></td>
+                                            <td>
+                                                @if (trade.Fee > 0)
+                                                {
+                                                    <small>$@trade.Fee.ToString("N8")</small>
+                                                }
+                                                else
+                                                {
+                                                    <small class="text-muted">-</small>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="p-4 text-center text-muted">
+                            <p><small>No trades executed yet</small></p>
+                            <small>Trades will appear here when the bot starts executing</small>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .metric-card {
+        padding: 0.75rem;
+        border-radius: 0.25rem;
+        border: 1px solid #dee2e6;
+        background-color: #fff;
+        margin-bottom: 0.5rem;
+    }
+    
+    .metric-value {
+        font-weight: bold;
+        margin-bottom: 0.25rem;
+    }
+    
+    .metric-label {
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .table-borderless td {
+        border: none;
+        padding: 0.25rem 0.75rem;
+    }
+    
+    .table-borderless td:first-child {
+        padding-left: 0;
+    }
+</style>
+                                        }
+                                        else
+                                        {
+                                            @($"{duration.Minutes}m {duration.Seconds}s")
+                                        }
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Metrics -->
+    @if (Model.Metrics != null)
+    {
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Performance Metrics</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-2">
+                                <div class="metric-card">
+                                    <div class="metric-value text-primary">$@Model.Metrics.TotalInvested.ToString("N2")</div>
+                                    <div class="metric-label">Total Invested</div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="metric-card">
+                                    <div class="metric-value text-info">$@Model.Metrics.TotalValue.ToString("N2")</div>
+                                    <div class="metric-label">Current Value</div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="metric-card">
+                                    @{
+                                        var profitLoss = Model.Metrics.TotalValue - Model.Metrics.TotalInvested;
+                                        var profitClass = profitLoss >= 0 ? "text-success" : "text-danger";
+                                        var profitSign = profitLoss >= 0 ? "+" : "";
+                                    }
+                                    <div class="metric-value @profitClass">@profitSign$@profitLoss.ToString("N2")</div>
+                                    <div class="metric-label">Profit/Loss</div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="metric-card">
+                                    @{
+                                        var roiClass = Model.Metrics.ROI >= 0 ? "text-success" : "text-danger";
+                                        var roiSign = Model.Metrics.ROI >= 0 ? "+" : "";
+                                    }
+                                    <div class="metric-value @roiClass">@roiSign@Model.Metrics.ROI.ToString("N2")%</div>
+                                    <div class="metric-label">ROI</div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="metric-card">
+                                    <div class="metric-value text-warning">@Model.Metrics.TotalTrades</div>
+                                    <div class="metric-label">Total Trades</div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="metric-card">
+                                    @if (Model.Metrics.WinRate.HasValue)
+                                    {
+                                        <div class="metric-value text-success">@Model.Metrics.WinRate.Value.ToString("N1")%</div>
+                                    }
+                                    else
+                                    {
+                                        <div class="metric-value text-muted">N/A</div>
+                                    }
+                                    <div class="metric-label">Win Rate</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Balance Information -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">💰 Balance Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Initial Balance:</span>
+                        <span class="fw-bold">$@Model.Session.InitialBalance.ToString("N2")</span>
+                    </div>
+                    @if (Model.Session.FinalBalance.HasValue)
+                    {
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Final Balance:</span>
+                            <span class="fw-bold">$@Model.Session.FinalBalance.Value.ToString("N2")</span>
+                        </div>
+                        var balanceChange = Model.Session.FinalBalance.Value - Model.Session.InitialBalance;
+                        var balanceClass = balanceChange >= 0 ? "text-success" : "text-danger";
+                        var balanceSign = balanceChange >= 0 ? "+" : "";
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Change:</span>
+                            <span class="fw-bold @balanceClass">@balanceSign$@balanceChange.ToString("N2")</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-muted">
+                            <small>Session is still running</small>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">📈 Quick Stats</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Number of Trades:</span>
+                        <span class="fw-bold">@Model.Trades.Count</span>
+                    </div>
+                    @if (Model.Trades.Any())
+                    {
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Average Trade Size:</span>
+                            <span class="fw-bold">$@Model.Trades.Average(t => t.Value).ToString("N2")</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Total Volume:</span>
+                            <span class="fw-bold">$@Model.Trades.Sum(t => t.Value).ToString("N2")</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trades Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">🔄 Trade History</h5>
+                    <span class="badge bg-secondary">@Model.Trades.Count trades</span>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.Trades.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Trade ID</th>
+                                        <th>Timestamp</th>
+                                        <th>Symbol</th>
+                                        <th>Side</th>
+                                        <th>Price</th>
+                                        <th>Quantity</th>
+                                        <th>Value</th>
+                                        <th>Fee</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var trade in Model.Trades)
+                                    {
+                                        <tr>
+                                            <td><small>#@trade.TradeId</small></td>
+                                            <td>
+                                                <small>@trade.Timestamp.ToString("yyyy-MM-dd, HH:mm:ss")</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-light text-dark">@trade.Symbol</span>
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var sideClass = trade.Side == "BUY" ? "success" : "danger";
+                                                }
+                                                <span class="badge bg-@sideClass">@trade.Side</span>
+                                            </td>
+                                            <td>$@trade.Price.ToString("N8")</td>
+                                            <td>@trade.Quantity.ToString("N8")</td>
+                                            <td>$@trade.Value.ToString("N2")</td>
+                                            <td>
+                                                @if (trade.Fee > 0)
+                                                {
+                                                    <span class="text-warning">$@trade.Fee.ToString("N8")</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="p-4 text-center text-muted">
+                            <i class="bi bi-arrow-left-right fs-1"></i>
+                            <p>No trades executed yet</p>
+                            <small>Trades will appear here when the bot starts executing</small>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .metric-card {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        background-color: #f8f9fa;
+        margin-bottom: 1rem;
+    }
+    
+    .metric-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 0.25rem;
+    }
+    
+    .metric-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .table-borderless td {
+        border: none;
+        padding: 0.25rem 0.75rem;
+    }
+    
+    .table-borderless td:first-child {
+        padding-left: 0;
+    }
+</style>

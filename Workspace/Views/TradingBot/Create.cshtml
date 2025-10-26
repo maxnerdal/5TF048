@@ -1,0 +1,341 @@
+
+@model DcaBotConfigurationViewModel
+@{
+    ViewData["Title"] = "Create Trading Bot";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h2>Create Trading Bot</h2>
+            <p class="text-muted">Configure your Dollar Cost Average trading bot</p>
+        </div>
+    </div>
+
+    <form asp-action="Create" method="post" class="needs-validation" novalidate>
+        @Html.AntiForgeryToken()
+        
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Bot Configuration</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Bot Name -->
+                        <div class="mb-3">
+                            <label asp-for="BotName" class="form-label">Bot Name</label>
+                            <input asp-for="BotName" class="form-control" placeholder="My Bitcoin DCA Bot" required>
+                            <span asp-validation-for="BotName" class="text-danger"></span>
+                        </div>
+
+                        <!-- Target Asset -->
+                        <div class="mb-3">
+                            <label asp-for="Configuration.TargetAsset" class="form-label">Target Asset</label>
+                            <select asp-for="Configuration.TargetAsset" class="form-select" required>
+                                <option value="">Select asset to invest in...</option>
+                                @foreach (var asset in Model.AvailableAssets)
+                                {
+                                    <option value="@asset.Symbol" data-name="@asset.Name">
+                                        @asset.Symbol - @asset.Name
+                                    </option>
+                                }
+                            </select>
+                            <span asp-validation-for="Configuration.TargetAsset" class="text-danger"></span>
+                        </div>
+
+                        <!-- Investment Amount -->
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label asp-for="Configuration.InvestmentAmount" class="form-label">Investment Amount</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input asp-for="Configuration.InvestmentAmount" 
+                                               type="number" 
+                                               step="0.01" 
+                                               min="0.01" 
+                                               max="100000" 
+                                               class="form-control" 
+                                               placeholder="100.00" 
+                                               required>
+                                    </div>
+                                    <span asp-validation-for="Configuration.InvestmentAmount" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label asp-for="Configuration.Currency" class="form-label">Currency</label>
+                                    <select asp-for="Configuration.Currency" class="form-select">
+                                        <option value="USD">USD</option>
+                                        <option value="EUR">EUR</option>
+                                        <option value="GBP">GBP</option>
+                                    </select>
+                                    <span asp-validation-for="Configuration.Currency" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Purchase Frequency -->
+                        <div class="mb-3">
+                            <label asp-for="Configuration.Frequency" class="form-label">Purchase Frequency</label>
+                            <select asp-for="Configuration.Frequency" class="form-select" id="frequencySelect" onchange="updateFrequencyOptions()">
+                                <option value="1">Daily</option>
+                                <option value="2" selected>Weekly</option>
+                                <option value="3">Monthly</option>
+                            </select>
+                            <span asp-validation-for="Configuration.Frequency" class="text-danger"></span>
+                        </div>
+
+                        <!-- Day Selection (Weekly/Monthly) -->
+                        <div class="mb-3" id="daySelectionWeekly">
+                            <label asp-for="Configuration.DayOfWeek" class="form-label">Day of Week</label>
+                            <select asp-for="Configuration.DayOfWeek" class="form-select">
+                                <option value="1">Monday</option>
+                                <option value="2">Tuesday</option>
+                                <option value="3">Wednesday</option>
+                                <option value="4">Thursday</option>
+                                <option value="5">Friday</option>
+                                <option value="6">Saturday</option>
+                                <option value="0">Sunday</option>
+                            </select>
+                            <span asp-validation-for="Configuration.DayOfWeek" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3" id="daySelectionMonthly" style="display: none;">
+                            <label asp-for="Configuration.DayOfMonth" class="form-label">Day of Month</label>
+                            <select asp-for="Configuration.DayOfMonth" class="form-select">
+                                @for (int i = 1; i <= 31; i++)
+                                {
+                                    <option value="@i">@i</option>
+                                }
+                            </select>
+                            <span asp-validation-for="Configuration.DayOfMonth" class="text-danger"></span>
+                            <div class="form-text">Note: For months with fewer days, the purchase will occur on the last day of the month.</div>
+                        </div>
+
+                        <!-- Execution Time -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Configuration.ExecutionHour" class="form-label">Execution Hour (UTC)</label>
+                                    <select asp-for="Configuration.ExecutionHour" class="form-select">
+                                        @for (int i = 0; i < 24; i++)
+                                        {
+                                            <option value="@i" selected="@(i == 9)">@($"{i:D2}:00")</option>
+                                        }
+                                    </select>
+                                    <span asp-validation-for="Configuration.ExecutionHour" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Configuration.ExecutionMinute" class="form-label">Execution Minute</label>
+                                    <select asp-for="Configuration.ExecutionMinute" class="form-select">
+                                        @for (int i = 0; i < 60; i += 15)
+                                        {
+                                            <option value="@i" selected="@(i == 0)">@($"{i:D2}")</option>
+                                        }
+                                    </select>
+                                    <span asp-validation-for="Configuration.ExecutionMinute" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Optional Settings -->
+                        <hr>
+                        <h6>Optional Settings</h6>
+
+                        <!-- Max Total Investment -->
+                        <div class="mb-3">
+                            <label asp-for="Configuration.MaxTotalInvestment" class="form-label">Maximum Total Investment (Optional)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input asp-for="Configuration.MaxTotalInvestment" 
+                                       type="number" 
+                                       step="0.01" 
+                                       min="0.01" 
+                                       class="form-control" 
+                                       placeholder="Leave empty for no limit">
+                            </div>
+                            <div class="form-text">Bot will stop purchasing when this total investment amount is reached.</div>
+                            <span asp-validation-for="Configuration.MaxTotalInvestment" class="text-danger"></span>
+                        </div>
+
+                        <!-- Date Range -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Configuration.StartDate" class="form-label">Start Date (Optional)</label>
+                                    <input asp-for="Configuration.StartDate" type="date" class="form-control">
+                                    <span asp-validation-for="Configuration.StartDate" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Configuration.EndDate" class="form-label">End Date (Optional)</label>
+                                    <input asp-for="Configuration.EndDate" type="date" class="form-control">
+                                    <span asp-validation-for="Configuration.EndDate" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Auto Start -->
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input asp-for="Configuration.AutoStart" class="form-check-input" type="checkbox">
+                                <label asp-for="Configuration.AutoStart" class="form-check-label">
+                                    Start bot automatically after creation
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="mb-3">
+                            <label asp-for="Configuration.Notes" class="form-label">Notes (Optional)</label>
+                            <textarea asp-for="Configuration.Notes" class="form-control" rows="3" placeholder="Add any notes about this DCA strategy..."></textarea>
+                            <span asp-validation-for="Configuration.Notes" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preview Card -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Configuration Preview</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="configPreview">
+                            <p class="text-muted">Configure your bot to see the preview...</p>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="mb-3">
+                            <h6>Estimated Annual Investment</h6>
+                            <div id="annualEstimate" class="text-primary fs-5 fw-bold">$0.00</div>
+                        </div>
+                        
+                        <div id="nextExecutionPreview" style="display: none;">
+                            <h6>Next Execution</h6>
+                            <div id="nextExecution" class="text-muted"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Create Trading Bot</button>
+                    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        function updateFrequencyOptions() {
+            const frequency = document.getElementById('frequencySelect').value;
+            const weeklyDiv = document.getElementById('daySelectionWeekly');
+            const monthlyDiv = document.getElementById('daySelectionMonthly');
+            
+            if (frequency === '2') { // Weekly
+                weeklyDiv.style.display = 'block';
+                monthlyDiv.style.display = 'none';
+            } else if (frequency === '3') { // Monthly
+                weeklyDiv.style.display = 'none';
+                monthlyDiv.style.display = 'block';
+            } else { // Daily
+                weeklyDiv.style.display = 'none';
+                monthlyDiv.style.display = 'none';
+            }
+            
+            updatePreview();
+        }
+        
+        function updatePreview() {
+            const botName = document.querySelector('[name="BotName"]').value || 'Unnamed Bot';
+            const asset = document.querySelector('[name="Configuration.TargetAsset"]').value;
+            const amount = document.querySelector('[name="Configuration.InvestmentAmount"]').value;
+            const currency = document.querySelector('[name="Configuration.Currency"]').value;
+            const frequency = document.querySelector('[name="Configuration.Frequency"]').value;
+            const hour = document.querySelector('[name="Configuration.ExecutionHour"]').value;
+            const minute = document.querySelector('[name="Configuration.ExecutionMinute"]').value;
+            
+            let frequencyText = '';
+            let multiplier = 0;
+            
+            if (frequency === '1') { // Daily
+                frequencyText = 'daily';
+                multiplier = 365;
+            } else if (frequency === '2') { // Weekly
+                const dayOfWeek = document.querySelector('[name="Configuration.DayOfWeek"]').value;
+                const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                frequencyText = `weekly on ${days[dayOfWeek]}`;
+                multiplier = 52;
+            } else if (frequency === '3') { // Monthly
+                const dayOfMonth = document.querySelector('[name="Configuration.DayOfMonth"]').value;
+                frequencyText = `monthly on day ${dayOfMonth}`;
+                multiplier = 12;
+            }
+            
+            const timeText = `${hour.padStart(2, '0')}:${minute.padStart(2, '0')} UTC`;
+            
+            let preview = `<strong>${botName}</strong><br>`;
+            if (asset && amount) {
+                preview += `Invest ${currency} ${parseFloat(amount).toFixed(2)} in ${asset} ${frequencyText} at ${timeText}`;
+            } else {
+                preview = '<p class="text-muted">Configure your bot to see the preview...</p>';
+            }
+            
+            document.getElementById('configPreview').innerHTML = preview;
+            
+            // Calculate annual estimate
+            if (amount && multiplier > 0) {
+                const annual = parseFloat(amount) * multiplier;
+                document.getElementById('annualEstimate').textContent = `${currency} ${annual.toFixed(2)}`;
+            } else {
+                document.getElementById('annualEstimate').textContent = `${currency} 0.00`;
+            }
+        }
+        
+        // Add event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            updateFrequencyOptions();
+            
+            // Add listeners to all form inputs
+            const inputs = document.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                input.addEventListener('change', updatePreview);
+                input.addEventListener('input', updatePreview);
+            });
+            
+            // Initial preview update
+            updatePreview();
+        });
+        
+        // Form validation
+        (function() {
+            'use strict';
+            window.addEventListener('load', function() {
+                var forms = document.getElementsByClassName('needs-validation');
+                var validation = Array.prototype.filter.call(forms, function(form) {
+                    form.addEventListener('submit', function(event) {
+                        if (form.checkValidity() === false) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            }, false);
+        })();
+    </script>
+}

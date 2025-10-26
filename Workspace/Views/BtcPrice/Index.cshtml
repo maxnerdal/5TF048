@@ -6,16 +6,16 @@
 
 <!-- Header using ViewBag -->
 <div class="text-center mb-4">
-    <h1 class="display-4">@ViewBag.PageTitle</h1>
-    <p class="lead">@ViewBag.MarketStatus</p>
+    <h3>@ViewBag.PageTitle</h3>
+    <p><small>@ViewBag.MarketStatus</small></p>
 </div>
 
 <div class="container">
     <!-- Alert Message from ViewBag -->
     <div class="row justify-content-center mb-4">
         <div class="col-md-8">
-            <div class="alert alert-info text-center" role="alert">
-                <h5>@ViewBag.AlertMessage</h5>
+            <div class="alert alert-light border text-center" role="alert">
+                <small>@ViewBag.AlertMessage</small>
             </div>
         </div>
     </div>
@@ -23,24 +23,24 @@
     <!-- Main BTC Price Card (Model + ViewBag styling) -->
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <div class="card shadow">
-                <div class="card-header bg-warning text-dark">
-                    <h3 class="card-title mb-0">
-                        🪙 Bitcoin (BTC)
-                    </h3>
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        Bitcoin (BTC)
+                    </h6>
                 </div>
                 <div class="card-body text-center">
                     <!-- Model data -->
-                    <h2 class="display-3 text-success">
+                    <h2>
                         $@Model.Price.ToString("N2")
                     </h2>
-                    <p class="text-muted">@Model.Currency</p>
+                    <p class="text-muted"><small>@Model.Currency</small></p>
                     
                     <!-- ViewBag for dynamic styling -->
                     @if (Model.ChangePercent24h != 0)
                     {
-                        <p class="@ViewBag.PriceColor fs-5">
-                            @ViewBag.PriceIcon @Model.ChangePercent24h.ToString("N2")% (24h)
+                        <p class="@ViewBag.PriceColor">
+                            <small>@Model.ChangePercent24h.ToString("N2")% (24h)</small>
                         </p>
                     }
                     
@@ -50,8 +50,8 @@
                     </small>
                 </div>
                 <div class="card-footer">
-                    <button id="refreshBtn" class="btn btn-primary btn-block">
-                        🔄 Refresh Price
+                    <button id="refreshBtn" class="btn btn-outline-dark btn-sm btn-block">
+                        Refresh Price
                     </button>
                 </div>
             </div>
@@ -63,10 +63,10 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
-                    <h5>⏰ Next Update</h5>
+                    <h6>Next Update</h6>
                 </div>
                 <div class="card-body">
-                    <p>Next automatic update: <strong>@ViewBag.NextUpdateTime</strong></p>
+                    <p><small>Next automatic update: <strong>@ViewBag.NextUpdateTime</strong></small></p>
                 </div>
             </div>
         </div>
@@ -74,10 +74,10 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
-                    <h5>💡 Trading Tip</h5>
+                    <h6>Trading Tip</h6>
                 </div>
                 <div class="card-body">
-                    <p>@ViewBag.TradingTip</p>
+                    <p><small>@ViewBag.TradingTip</small></p>
                 </div>
             </div>
         </div>

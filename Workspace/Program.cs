@@ -2,8 +2,19 @@ using WebApp.Services;
 using WebApp.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Localization;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure culture to use en-US for consistent decimal parsing (fixes Swedish locale issue)
+var supportedCultures = new[] { new CultureInfo("en-US") };
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    options.DefaultRequestCulture = new RequestCulture("en-US");
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+});
 
 // Add services to the container.
 builder.Services.AddControllersWithViews(options =>
@@ -29,6 +40,16 @@ builder.Services.AddScoped<IBtcPriceService, BtcPriceService>();
 
 // Register the Entity Framework-based authentication service (for AccountController)
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+
+// Register bot configuration service for JSON parameter management
+builder.Services.AddScoped<IBotConfigurationService, BotConfigurationService>();
+
+// Register trading bot and backtesting services (adapted for JSON configuration)
+builder.Services.AddScoped<ITradingBotService, TradingBotService>();
+builder.Services.AddScoped<IBacktestingService, BacktestingService>();
+
+// TODO: Add back when needed for strategy execution
+// builder.Services.AddScoped<IBotStrategyFactory, BotStrategyFactory>();
 
 // Register background service for daily market data updates
 // DISABLED: Uncomment the line below to enable automatic daily updates
@@ -64,6 +85,10 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Use request localization to enforce en-US culture for decimal parsing
+app.UseRequestLocalization();
+
 app.UseRouting();
 
 app.UseAuthentication();

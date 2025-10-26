@@ -1,54 +1,44 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WebApp.Models
 {
+    [Table("PortfolioItems")]
     public class PortfolioItem
     {
-        public int Id { get; set; }
+        public long Id { get; set; }
         
-        [Required(ErrorMessage = "Coin name is required")]
-        [Display(Name = "Coin Name")]
-        public string CoinName { get; set; } = string.Empty;
+        [Required]
+        public long PortfolioId { get; set; }
         
-        [Required(ErrorMessage = "Symbol is required")]
-        [Display(Name = "Symbol")]
-        [StringLength(10, ErrorMessage = "Symbol must be 10 characters or less")]
-        public string Symbol { get; set; } = string.Empty;
+        [Required]
+        public long DigitalAssetId { get; set; }
         
-        [Required(ErrorMessage = "Quantity is required")]
+        [Required]
+        [Column(TypeName = "decimal(18,8)")]
         [Range(0.00000001, double.MaxValue, ErrorMessage = "Quantity must be greater than 0")]
         [Display(Name = "Quantity")]
         public decimal Quantity { get; set; }
         
-        [Required(ErrorMessage = "Buy price is required")]
-        [Range(0.01, double.MaxValue, ErrorMessage = "Buy price must be greater than 0")]
-        [Display(Name = "Buy Price ($)")]
+        [Required]
+        [Column(TypeName = "decimal(18,8)")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "Purchase price must be greater than 0")]
+        [Display(Name = "Purchase Price ($)")]
         [DisplayFormat(DataFormatString = "{0:C}", ApplyFormatInEditMode = false)]
-        public decimal BuyPrice { get; set; }
+        public decimal PurchasePrice { get; set; }
         
-        [Required(ErrorMessage = "Purchase date is required")]
-        [Display(Name = "Date Purchased")]
+        [Required]
+        [Display(Name = "Purchase Date")]
         [DataType(DataType.Date)]
-        public DateTime DatePurchased { get; set; } = DateTime.Today;
+        public DateTime PurchaseDate { get; set; } = DateTime.Today;
         
-        // Calculated properties
-        [Display(Name = "Total Investment")]
-        [DisplayFormat(DataFormatString = "{0:C}")]
-        public decimal TotalInvestment => Quantity * BuyPrice;
+        public string? Notes { get; set; }
         
-        // This will be calculated with current price later
-        public decimal CurrentPrice { get; set; }
-        
-        [Display(Name = "Current Value")]
-        [DisplayFormat(DataFormatString = "{0:C}")]
-        public decimal CurrentValue => Quantity * CurrentPrice;
-        
-        [Display(Name = "Profit/Loss")]
-        [DisplayFormat(DataFormatString = "{0:C}")]
-        public decimal ProfitLoss => CurrentValue - TotalInvestment;
-        
-        [Display(Name = "Profit/Loss %")]
-        [DisplayFormat(DataFormatString = "{0:P2}")]
-        public decimal ProfitLossPercentage => TotalInvestment > 0 ? ProfitLoss / TotalInvestment : 0;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+        // Navigation properties
+        public virtual Portfolio Portfolio { get; set; } = null!;
+        public virtual DigitalAsset DigitalAsset { get; set; } = null!;
     }
 }

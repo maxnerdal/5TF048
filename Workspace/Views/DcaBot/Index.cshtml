@@ -1,0 +1,207 @@
+@model List<DcaBotSummaryViewModel>
+@{
+    ViewData["Title"] = "DCA Bots";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h3>DCA Trading Bots</h3>
+            <p class="text-muted"><small>Manage your Dollar Cost Average trading bots</small></p>
+            
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-light border alert-dismissible fade show" role="alert">
+                    <small>@TempData["SuccessMessage"]</small>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-light border alert-dismissible fade show" role="alert">
+                    <small>@TempData["ErrorMessage"]</small>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-12">
+            <a href="@Url.Action("Create", "DcaBot")" class="btn btn-outline-dark btn-sm">
+                Create New DCA Bot
+            </a>
+        </div>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="row">
+            @foreach (var bot in Model)
+            {
+                <div class="col-lg-6 col-xl-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h6 class="card-title mb-0">@bot.BotName</h6>
+                            <small>@bot.Status</small>
+                        </div>
+                        <div class="card-body">
+                            <div class="bot-config-summary mb-3">
+                                <h6 class="text-muted">Configuration</h6>
+                                <p class="small">
+                                    <span><strong>Asset:</strong> @bot.Configuration.TargetAsset</span><br>
+                                    <span><strong>Amount:</strong> @bot.Configuration.Currency @bot.Configuration.InvestmentAmount.ToString("F2")</span><br>
+                                    <span><strong>Frequency:</strong> @bot.Configuration.Frequency.ToString()</span><br>
+                                    @if (bot.Configuration.Frequency == DcaFrequency.Weekly && bot.Configuration.DayOfWeek.HasValue)
+                                    {
+                                        <span><strong>Day:</strong> @bot.Configuration.DayOfWeek</span><br>
+                                    }
+                                    @if (bot.Configuration.Frequency == DcaFrequency.Monthly && bot.Configuration.DayOfMonth.HasValue)
+                                    {
+                                        <span><strong>Day:</strong> @bot.Configuration.DayOfMonth</span><br>
+                                    }
+                                    <span><strong>Time:</strong> @($"{bot.Configuration.ExecutionHour:D2}:{bot.Configuration.ExecutionMinute:D2}") UTC</span>
+                                </p>
+                            </div>
+
+                            <div class="bot-performance mb-3">
+                                <h6 class="text-muted">Performance</h6>
+                                <div class="row text-center">
+                                    <div class="col-6">
+                                        <div class="small text-muted">Total Invested</div>
+                                        <div class="fw-bold">$@bot.TotalInvested.ToString("F2")</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="small text-muted">ROI</div>
+                                        <div class="fw-bold">
+                                            @bot.ROIPercentage.ToString("F2")%
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row text-center mt-2">
+                                    <div class="col-6">
+                                        <div class="small text-muted">Purchases</div>
+                                        <div class="fw-bold">@bot.TotalPurchases</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="small text-muted">Current Value</div>
+                                        <div class="fw-bold">$@bot.CurrentValue.ToString("F2")</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bot-schedule mb-3">
+                                <h6 class="text-muted">Schedule</h6>
+                                <p class="small">
+                                    @if (bot.LastRun.HasValue)
+                                    {
+                                        <span><strong>Last Run:</strong> @bot.LastRun.Value.ToString("MMM dd, yyyy HH:mm") UTC</span><br>
+                                    }
+                                    @if (bot.NextRun.HasValue)
+                                    {
+                                        <span><strong>Next Run:</strong> @bot.NextRun.Value.ToString("MMM dd, yyyy HH:mm") UTC</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Schedule not configured</span>
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="btn-group w-100" role="group">
+                                <a href="@Url.Action("Edit", "DcaBot", new { id = bot.UserBotId })" 
+                                   class="btn btn-outline-dark btn-sm">
+                                    ✎
+                                </a>
+                                <button type="button" 
+                                        class="btn btn-outline-dark btn-sm"
+                                        onclick="toggleBotStatus(@bot.UserBotId, '@bot.Status')">
+                                    @(bot.Status == "Active" ? "⏸" : "▶")
+                                </button>
+                                <button type="button" 
+                                        class="btn btn-outline-dark btn-sm"
+                                        onclick="deleteBot(@bot.UserBotId, '@bot.BotName')">
+                                    🗑
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <h6 class="text-muted">No DCA Bots Found</h6>
+                        <p class="text-muted"><small>Create your first Dollar Cost Average bot to start automated investing.</small></p>
+                        <a href="@Url.Action("Create", "DcaBot")" class="btn btn-outline-dark btn-sm">
+                            Create Your First DCA Bot
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the DCA bot "<span id="deleteBotName"></span>"?</p>
+                <p class="text-warning"><strong>Warning:</strong> This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="post" style="display: inline;">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">Delete Bot</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleBotStatus(botId, currentStatus) {
+            fetch('@Url.Action("ToggleStatus", "DcaBot")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: `id=${botId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload(); // Simple refresh for now
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while updating the bot status.');
+            });
+        }
+
+        function deleteBot(botId, botName) {
+            document.getElementById('deleteBotName').textContent = botName;
+            document.getElementById('deleteForm').action = '@Url.Action("Delete", "DcaBot")/' + botId;
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        }
+    </script>
+}

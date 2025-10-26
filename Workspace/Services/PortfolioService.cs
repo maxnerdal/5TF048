@@ -35,24 +35,25 @@ namespace WebApp.Services
         /// Get all portfolio items for a specific user from database
         /// This demonstrates a complex database query with relationships
         /// </summary>
-        public async Task<List<PortfolioItemViewModel>> GetUserPortfolioAsync(int userId)
+        public async Task<List<PortfolioItemViewModel>> GetUserPortfolioAsync(long userId)
         {
             // *** ENTITY FRAMEWORK QUERY ***
-            var portfolioItems = await _context.Portfolio    // Start with Portfolio table
+            var portfolioItems = await _context.PortfolioItems    // Start with PortfolioItems table
                 .Include(p => p.DigitalAsset)                // *** JOIN *** - Load related DigitalAsset data (EAGER LOADING)
-                .Where(p => p.UserId == userId)              // *** FILTER *** - Only this user's portfolio items
+                .Include(p => p.Portfolio)                   // *** JOIN *** - Load related Portfolio data
+                .Where(p => p.Portfolio.UserId == userId)    // *** FILTER *** - Only this user's portfolio items
                 .Select(p => new PortfolioItemViewModel      // *** PROJECTION *** - Transform database entities to ViewModels
                 {
                     // Map database fields to ViewModel properties
                     Id = p.Id,
-                    UserId = p.UserId,
-                    AssetId = p.AssetId,
+                    UserId = p.Portfolio.UserId,
+                    AssetId = p.DigitalAsset.Id,
                     AssetName = p.DigitalAsset.Name,         // Data from related DigitalAsset table
-                    AssetTicker = p.DigitalAsset.Ticker,     // Data from related DigitalAsset table
+                    AssetTicker = p.DigitalAsset.Symbol,     // Data from related DigitalAsset table
                     Quantity = p.Quantity,
-                    BuyPrice = p.BuyPrice,
-                    DatePurchased = p.DatePurchased,
-                    DateLastUpdate = p.DateLastUpdate
+                    BuyPrice = p.PurchasePrice,
+                    DatePurchased = p.PurchaseDate,
+                    DateLastUpdate = p.UpdatedAt
                 })
                 .ToListAsync();                              // *** ASYNC EXECUTION *** - Don't block the thread
 
@@ -62,22 +63,23 @@ namespace WebApp.Services
         /// <summary>
         /// Get a specific portfolio item for a user
         /// </summary>
-        public async Task<PortfolioItemViewModel?> GetPortfolioItemAsync(int id, int userId)
+        public async Task<PortfolioItemViewModel?> GetPortfolioItemAsync(long id, long userId)
         {
-            var portfolioItem = await _context.Portfolio
+            var portfolioItem = await _context.PortfolioItems
                 .Include(p => p.DigitalAsset)
-                .Where(p => p.Id == id && p.UserId == userId)
+                .Include(p => p.Portfolio)
+                .Where(p => p.Id == id && p.Portfolio.UserId == userId)
                 .Select(p => new PortfolioItemViewModel
                 {
                     Id = p.Id,
-                    UserId = p.UserId,
-                    AssetId = p.AssetId,
+                    UserId = p.Portfolio.UserId,
+                    AssetId = p.DigitalAsset.Id,
                     AssetName = p.DigitalAsset.Name,
-                    AssetTicker = p.DigitalAsset.Ticker,
+                    AssetTicker = p.DigitalAsset.Symbol,
                     Quantity = p.Quantity,
-                    BuyPrice = p.BuyPrice,
-                    DatePurchased = p.DatePurchased,
-                    DateLastUpdate = p.DateLastUpdate
+                    BuyPrice = p.PurchasePrice,
+                    DatePurchased = p.PurchaseDate,
+                    DateLastUpdate = p.UpdatedAt
                 })
                 .FirstOrDefaultAsync();
 
@@ -89,23 +91,43 @@ namespace WebApp.Services
         /// Add a new portfolio item for a user to the database
         /// This shows how to INSERT data through Entity Framework
         /// </summary>
-        public async Task<bool> AddPortfolioItemAsync(PortfolioItemViewModel item, int userId)
+        public async Task<bool> AddPortfolioItemAsync(PortfolioItemViewModel item, long userId)
         {
             try
             {
-                // *** ENTITY MAPPING *** - Convert ViewModel to Database Entity
-                var portfolioEntity = new Portfolio
+                // *** GET OR CREATE DEFAULT PORTFOLIO *** 
+                var portfolio = await _context.Portfolios
+                    .FirstOrDefaultAsync(p => p.UserId == userId);
+                
+                if (portfolio == null)
                 {
-                    UserId = userId,                          // Foreign key to Users table
-                    AssetId = item.AssetId,                   // Foreign key to DigitalAssets table
+                    // Create default portfolio for user
+                    portfolio = new Portfolio
+                    {
+                        UserId = userId,
+                        Name = "My Portfolio",
+                        Description = "Default portfolio",
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    };
+                    _context.Portfolios.Add(portfolio);
+                    await _context.SaveChangesAsync(); // Save to get the Portfolio ID
+                }
+
+                // *** ENTITY MAPPING *** - Convert ViewModel to Database Entity
+                var portfolioItemEntity = new PortfolioItem
+                {
+                    PortfolioId = portfolio.Id,               // Foreign key to Portfolios table
+                    DigitalAssetId = item.AssetId,            // Foreign key to DigitalAssets table
                     Quantity = item.Quantity,
-                    BuyPrice = item.BuyPrice,
-                    DatePurchased = item.DatePurchased,
-                    DateLastUpdate = DateTime.UtcNow          // Set audit timestamp
+                    PurchasePrice = item.BuyPrice,
+                    PurchaseDate = item.DatePurchased,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
                 };
 
                 // *** ADD TO CONTEXT *** - Tell EF to track this new entity
-                _context.Portfolio.Add(portfolioEntity);
+                _context.PortfolioItems.Add(portfolioItemEntity);
                 
                 // *** SAVE TO DATABASE *** - Execute the INSERT statement
                 // This is where the actual SQL is generated and executed
@@ -113,9 +135,12 @@ namespace WebApp.Services
                 
                 return true; // Success
             }
-            catch
+            catch (Exception ex)
             {
                 // *** ERROR HANDLING *** - Catch database errors (foreign key violations, etc.)
+                // Log the actual error for debugging
+                Console.WriteLine($"Error adding portfolio item: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
                 return false; // Failed
             }
         }
@@ -125,24 +150,25 @@ namespace WebApp.Services
         /// Update an existing portfolio item in the database
         /// This shows the typical pattern: Find -> Modify -> Save
         /// </summary>
-        public async Task<bool> UpdatePortfolioItemAsync(PortfolioItemViewModel item, int userId)
+        public async Task<bool> UpdatePortfolioItemAsync(PortfolioItemViewModel item, long userId)
         {
             try
             {
                 // *** FIND EXISTING ENTITY *** - Load from database for modification
-                var existingItem = await _context.Portfolio
-                    .FirstOrDefaultAsync(p => p.Id == item.Id && p.UserId == userId);
+                var existingItem = await _context.PortfolioItems
+                    .Include(p => p.Portfolio)
+                    .FirstOrDefaultAsync(p => p.Id == item.Id && p.Portfolio.UserId == userId);
 
                 // *** SECURITY CHECK *** - Ensure user owns this portfolio item
                 if (existingItem == null)
                     return false; // Item not found or doesn't belong to user
 
                 // *** MODIFY TRACKED ENTITY *** - EF will detect these changes
-                existingItem.AssetId = item.AssetId;
+                existingItem.DigitalAssetId = item.AssetId;
                 existingItem.Quantity = item.Quantity;
-                existingItem.BuyPrice = item.BuyPrice;
-                existingItem.DatePurchased = item.DatePurchased;
-                existingItem.DateLastUpdate = DateTime.UtcNow; // Update audit timestamp
+                existingItem.PurchasePrice = item.BuyPrice;
+                existingItem.PurchaseDate = item.DatePurchased;
+                existingItem.UpdatedAt = DateTime.UtcNow; // Update audit timestamp
 
                 // *** SAVE CHANGES *** - EF generates and executes UPDATE statement
                 // Only modified fields will be included in the SQL UPDATE
@@ -162,20 +188,21 @@ namespace WebApp.Services
         /// Delete a portfolio item from the database
         /// This completes the CRUD operations (Create, Read, Update, Delete)
         /// </summary>
-        public async Task<bool> DeletePortfolioItemAsync(int id, int userId)
+        public async Task<bool> DeletePortfolioItemAsync(long id, long userId)
         {
             try
             {
                 // *** FIND ENTITY TO DELETE *** - Must load it first
-                var item = await _context.Portfolio
-                    .FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
+                var item = await _context.PortfolioItems
+                    .Include(p => p.Portfolio)
+                    .FirstOrDefaultAsync(p => p.Id == id && p.Portfolio.UserId == userId);
 
                 // *** SECURITY CHECK *** - Ensure user owns this item
                 if (item == null)
                     return false; // Item not found or doesn't belong to user
 
                 // *** MARK FOR DELETION *** - Tell EF to delete this entity
-                _context.Portfolio.Remove(item);
+                _context.PortfolioItems.Remove(item);
                 
                 // *** EXECUTE DELETE *** - Generate and execute DELETE statement
                 await _context.SaveChangesAsync();
@@ -194,9 +221,11 @@ namespace WebApp.Services
         /// </summary>
         public async Task<List<DigitalAsset>> GetAvailableAssetsAsync()
         {
-            return await _context.DigitalAssets
+            var assets = await _context.DigitalAssets
                 .OrderBy(a => a.Name)
                 .ToListAsync();
+            
+            return assets ?? new List<DigitalAsset>();
         }
 
         /// <summary>
@@ -205,7 +234,7 @@ namespace WebApp.Services
         public async Task<DigitalAsset?> GetAssetByTickerAsync(string ticker)
         {
             return await _context.DigitalAssets
-                .FirstOrDefaultAsync(a => a.Ticker.ToUpper() == ticker.ToUpper());
+                .FirstOrDefaultAsync(a => a.Symbol.ToUpper() == ticker.ToUpper());
         }
     }
 }
