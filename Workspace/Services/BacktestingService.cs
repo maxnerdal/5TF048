@@ -58,7 +58,10 @@ namespace WebApp.Services
                     if (dcaConfig != null)
                     {
                         legacy.WeeklyBuyAmount = dcaConfig.InvestmentAmount; // InvestmentAmount in DCA is per-execution amount
-                        legacy.InvestmentAmount = dcaConfig.MaxTotalInvestment ?? dcaConfig.InvestmentAmount * 52; // Estimate yearly amount
+                        
+                        // Use MaxTotalInvestment if set, otherwise leave as 0 to indicate unlimited
+                        legacy.InvestmentAmount = dcaConfig.MaxTotalInvestment ?? 0;
+                        
                         legacy.RiskLevel = "Medium"; // Default
                         legacy.StartDay = (int)(dcaConfig.DayOfWeek ?? DayOfWeek.Monday);
                         legacy.DCAFrequency = dcaConfig.Frequency.ToString();
@@ -275,9 +278,22 @@ namespace WebApp.Services
                 // Convert JSON config to legacy format for existing code compatibility
                 var config = LegacyBotConfiguration.FromJson(_botConfigService, configJson, userBot.TradingBot?.Strategy ?? "DCA");
 
+                // For historical backtests, use a large initial balance
+                // The actual budget limit (if any) is controlled by config.InvestmentAmount
+                var initialBalance = 1000000m; // $1M virtual balance
+                
                 // Create backtest session
-                var sessionId = await _tradingBotService.CreateTradingSessionAsync(userBotId, "Historical Backtest", config.InvestmentAmount);
+                var sessionId = await _tradingBotService.CreateTradingSessionAsync(userBotId, "Historical Backtest", initialBalance);
                 Console.WriteLine($"Created backtest session {sessionId} for period {startDate:yyyy-MM-dd} to {endDate:yyyy-MM-dd}");
+                
+                if (config.InvestmentAmount > 0)
+                {
+                    Console.WriteLine($"Budget limit: ${config.InvestmentAmount:N2} (will stop when reached)");
+                }
+                else
+                {
+                    Console.WriteLine($"Budget limit: Unlimited (will trade for entire period)");
+                }
                 
                 // Parse DCA frequency from parameters
                 var dcaFrequency = GetDCAFrequencyFromConfig(configJson);
@@ -303,14 +319,17 @@ namespace WebApp.Services
                             await SimulateTradeAsync(sessionId, "BTCUSDT", historicalPrice, currentDate);
                             tradesExecuted++;
                             
-                            // Check if we've reached investment limit
-                            var trades = await _tradingBotService.GetTradesAsync(sessionId);
-                            var totalInvested = trades.Sum(t => t.Value + t.Fee);
-                            
-                            if (totalInvested >= config.InvestmentAmount)
+                            // Check if we've reached investment limit (only if budget is set)
+                            if (config.InvestmentAmount > 0)
                             {
-                                Console.WriteLine($"Investment limit reached: ${totalInvested:F2}");
-                                break; // Stop backtesting if budget is exhausted
+                                var trades = await _tradingBotService.GetTradesAsync(sessionId);
+                                var totalInvested = trades.Sum(t => t.Value + t.Fee);
+                                
+                                if (totalInvested >= config.InvestmentAmount)
+                                {
+                                    Console.WriteLine($"Investment limit reached: ${totalInvested:F2} / ${config.InvestmentAmount:F2}");
+                                    break; // Stop backtesting if budget is exhausted
+                                }
                             }
                         }
                         else

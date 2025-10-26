@@ -12,16 +12,15 @@
     <div class="row">
         <div class="col-12">
             <!-- Demo Data Warning -->
-            <div class="alert alert-warning d-flex align-items-center mb-4" role="alert">
-                <i class="fas fa-exclamation-triangle me-2"></i>
+            <div class="alert alert-light border d-flex align-items-center mb-4" role="alert">
                 <div>
-                    <strong>Demo Data Notice:</strong> This page displays simulated cryptocurrency market data for demonstration purposes. 
-                    Real-time data requires CoinGecko API authentication.
+                    <small><strong>Demo Data Notice:</strong> This page displays simulated cryptocurrency market data for demonstration purposes. 
+                    Real-time data requires CoinGecko API authentication.</small>
                 </div>
             </div>
             
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>🚀 Top Cryptocurrencies</h2>
+                <h3>Top Cryptocurrencies</h3>
                 <div class="text-muted">
                     <small>Last updated: @DateTime.Now.ToString("HH:mm:ss")</small>
                 </div>
@@ -29,8 +28,8 @@
 
             @if (TempData["Error"] != null)
             {
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    @TempData["Error"]
+                <div class="alert alert-light border alert-dismissible fade show" role="alert">
+                    <small>@TempData["Error"]</small>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             }
@@ -42,18 +41,18 @@
                         <input type="hidden" name="sortBy" value="@currentSort" />
                         <input type="hidden" name="category" value="@currentCategory" />
                         <div class="flex-grow-1">
-                            <input type="text" name="search" class="form-control" 
+                            <input type="text" name="search" class="form-control form-control-sm" 
                                    placeholder="Sök efter kryptovaluta (namn, symbol eller ID)..." 
                                    value="@currentSearch" />
                         </div>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-search"></i> Sök
+                        <button type="submit" class="btn btn-outline-dark btn-sm">
+                            Sök
                         </button>
                         @if (!string.IsNullOrEmpty(currentSearch))
                         {
                             <a href="@Url.Action("Top100", new { sortBy = currentSort, category = currentCategory })" 
-                               class="btn btn-outline-secondary">
-                                <i class="fas fa-times"></i> Rensa
+                               class="btn btn-outline-dark btn-sm">
+                                Rensa
                             </a>
                         }
                     </form>
@@ -65,13 +64,13 @@
                 <div class="col-12">
                     <div class="d-flex flex-wrap gap-2 mb-3">
                         <a href="@Url.Action("Top100", new { sortBy = currentSort, category = "", search = currentSearch })" 
-                           class="btn @(string.IsNullOrEmpty(currentCategory) ? "btn-primary" : "btn-outline-primary") btn-sm">
+                           class="btn @(string.IsNullOrEmpty(currentCategory) ? "btn-dark" : "btn-outline-dark") btn-sm">
                             All
                         </a>
                         @foreach (var category in allCategories)
                         {
                             <a href="@Url.Action("Top100", new { sortBy = currentSort, category = category, search = currentSearch })" 
-                               class="btn @(currentCategory.Equals(category, StringComparison.OrdinalIgnoreCase) ? "btn-primary" : "btn-outline-primary") btn-sm">
+                               class="btn @(currentCategory.Equals(category, StringComparison.OrdinalIgnoreCase) ? "btn-dark" : "btn-outline-dark") btn-sm">
                                 @category
                             </a>
                         }
@@ -81,9 +80,10 @@
 
             @if (Model == null || !Model.Any())
             {
-                <div class="alert alert-info">
-                    <h4>No Data Available</h4>
+                <div class="alert alert-light border">
+                    <h6>No Data Available</h6>
                     <p>
+                        <small>
                         @if (!string.IsNullOrEmpty(currentSearch) && !string.IsNullOrEmpty(currentCategory))
                         {
                             <text>Inga kryptovalutor hittades för sökningen "@currentSearch" i kategorin "@currentCategory".</text>
@@ -100,6 +100,7 @@
                         {
                             <text>Unable to load cryptocurrency data at this time. Please try refreshing the page.</text>
                         }
+                        </small>
                     </p>
                 </div>
             }
@@ -109,35 +110,35 @@
                     <div class="card-body p-0">
                         <div class="table-responsive">
                             <table class="table table-hover mb-0">
-                                <thead class="table-dark sticky-top">
+                                <thead class="table-light sticky-top">
                                     <tr>
-                                        <th scope="col">#</th>
-                                        <th scope="col">Name</th>
+                                        <th scope="col"><small>#</small></th>
+                                        <th scope="col"><small>Name</small></th>
                                         <th scope="col">
                                             <a href="@Url.Action("Top100", new { sortBy = "price", category = currentCategory, search = currentSearch })" 
-                                               class="text-decoration-none text-white">
-                                                Price @if (currentSort == "price") { <i class="fas fa-sort-down"></i> }
+                                               class="text-decoration-none text-dark">
+                                                <small>Price @if (currentSort == "price") { <text>↓</text> }</small>
                                             </a>
                                         </th>
                                         <th scope="col">
                                             <a href="@Url.Action("Top100", new { sortBy = "change", category = currentCategory, search = currentSearch })" 
-                                               class="text-decoration-none text-white">
-                                                24h Change @if (currentSort == "change") { <i class="fas fa-sort-down"></i> }
+                                               class="text-decoration-none text-dark">
+                                                <small>24h Change @if (currentSort == "change") { <text>↓</text> }</small>
                                             </a>
                                         </th>
                                         <th scope="col">
                                             <a href="@Url.Action("Top100", new { sortBy = "marketcap", category = currentCategory, search = currentSearch })" 
-                                               class="text-decoration-none text-white">
-                                                Market Cap @if (currentSort == "marketcap") { <i class="fas fa-sort-down"></i> }
+                                               class="text-decoration-none text-dark">
+                                                <small>Market Cap @if (currentSort == "marketcap") { <text>↓</text> }</small>
                                             </a>
                                         </th>
                                         <th scope="col">
                                             <a href="@Url.Action("Top100", new { sortBy = "volume", category = currentCategory, search = currentSearch })" 
-                                               class="text-decoration-none text-white">
-                                                Volume (24h) @if (currentSort == "volume") { <i class="fas fa-sort-down"></i> }
+                                               class="text-decoration-none text-dark">
+                                                <small>Volume (24h) @if (currentSort == "volume") { <text>↓</text> }</small>
                                             </a>
                                         </th>
-                                        <th scope="col">Categories</th>
+                                        <th scope="col"><small>Categories</small></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -145,26 +146,26 @@
                                     {
                                         var crypto = Model[i];
                                         <tr>
-                                            <td class="fw-bold text-muted">@(i + 1)</td>
+                                            <td class="text-muted"><small>@(i + 1)</small></td>
                                             <td>
                                                 <div class="d-flex align-items-center">
                                                     <img src="@crypto.Image" alt="@crypto.Name" class="me-2" style="width: 24px; height: 24px;">
                                                     <div>
-                                                        <div class="fw-bold">@crypto.Name</div>
+                                                        <div><small><strong>@crypto.Name</strong></small></div>
                                                         <small class="text-muted text-uppercase">@crypto.Symbol</small>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td class="fw-bold">$@crypto.CurrentPrice.ToString("N2")</td>
-                                            <td class="@crypto.ChangeColorClass fw-bold">
-                                                @crypto.ChangeIcon @crypto.PriceChangePercentage24h.ToString("N2")%
+                                            <td><small><strong>$@crypto.CurrentPrice.ToString("N2")</strong></small></td>
+                                            <td>
+                                                <small><strong>@crypto.PriceChangePercentage24h.ToString("N2")%</strong></small>
                                             </td>
-                                            <td>@crypto.FormattedMarketCap</td>
-                                            <td class="text-muted">@crypto.FormattedVolume</td>
+                                            <td><small>@crypto.FormattedMarketCap</small></td>
+                                            <td class="text-muted"><small>@crypto.FormattedVolume</small></td>
                                             <td>
                                                 @foreach (var category in crypto.Categories)
                                                 {
-                                                    <span class="badge bg-secondary me-1 mb-1">@category</span>
+                                                    <small class="me-1">@category</small>
                                                 }
                                             </td>
                                         </tr>
@@ -179,7 +180,6 @@
                     <div class="row">
                         <div class="col-md-6">
                             <p class="text-muted small">
-                                <i class="fas fa-info-circle"></i>
                                 Showing @Model.Count cryptocurrency@(Model.Count != 1 ? "s" : "") 
                                 @if (!string.IsNullOrEmpty(currentSearch)) { <text>matching "@currentSearch" </text> }
                                 @if (!string.IsNullOrEmpty(currentCategory)) { <text>in "@currentCategory" category </text> }
@@ -188,7 +188,7 @@
                         </div>
                         <div class="col-md-6 text-md-end">
                             <small class="text-muted">
-                                Demo data • <a href="#" onclick="location.reload()" class="text-decoration-none">🔄 Refresh Data</a>
+                                Demo data • <a href="#" onclick="location.reload()" class="text-decoration-none">Refresh Data</a>
                             </small>
                         </div>
                     </div>
@@ -200,7 +200,7 @@
 
 <style>
     .table tbody tr:hover {
-        background-color: rgba(0, 123, 255, 0.1);
+        background-color: #f8f9fa;
     }
     
     .sticky-top {
@@ -209,17 +209,13 @@
         z-index: 10;
     }
     
-    .alert-warning {
-        border-left: 4px solid #ffc107;
+    .alert-light {
+        border-left: 4px solid #dee2e6;
     }
     
     .btn-sm {
         font-size: 0.8rem;
         padding: 0.25rem 0.75rem;
-    }
-    
-    .badge {
-        font-size: 0.7rem;
     }
     
     th a:hover {

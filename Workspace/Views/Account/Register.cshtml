@@ -5,18 +5,17 @@
 
 <div class="row justify-content-center">
     <div class="col-md-6 col-lg-5">
-        <div class="card shadow">
-            <div class="card-header bg-success text-white text-center">
-                <h3 class="mb-0">👤 Create Account</h3>
-            </div>
+        <div class="card border">
             <div class="card-body">
+                <h3 class="text-center mb-4">Create Account</h3>
+                
                 @if (!ViewData.ModelState.IsValid)
                 {
-                    <div class="alert alert-danger">
+                    <div class="alert alert-light border">
                         <ul class="mb-0">
                             @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
                             {
-                                <li>@error.ErrorMessage</li>
+                                <li><small>@error.ErrorMessage</small></li>
                             }
                         </ul>
                     </div>
@@ -26,34 +25,34 @@
                     @Html.AntiForgeryToken()
 
                     <div class="mb-3">
-                        <label asp-for="Username" class="form-label"></label>
-                        <input asp-for="Username" class="form-control" placeholder="Choose a username" />
+                        <label asp-for="Username" class="form-label"><small>Username</small></label>
+                        <input asp-for="Username" class="form-control form-control-sm" placeholder="Choose a username" />
                         <span asp-validation-for="Username" class="text-danger"></span>
-                        <div class="form-text">3-50 characters, letters and numbers only</div>
+                        <div class="form-text"><small>3-50 characters, letters and numbers only</small></div>
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="Email" class="form-label"></label>
-                        <input asp-for="Email" class="form-control" placeholder="Enter your email address" />
+                        <label asp-for="Email" class="form-label"><small>Email</small></label>
+                        <input asp-for="Email" class="form-control form-control-sm" placeholder="Enter your email address" />
                         <span asp-validation-for="Email" class="text-danger"></span>
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="Password" class="form-label"></label>
-                        <input asp-for="Password" class="form-control" placeholder="Choose a password" />
+                        <label asp-for="Password" class="form-label"><small>Password</small></label>
+                        <input asp-for="Password" class="form-control form-control-sm" placeholder="Choose a password" />
                         <span asp-validation-for="Password" class="text-danger"></span>
-                        <div class="form-text">Minimum 6 characters</div>
+                        <div class="form-text"><small>Minimum 6 characters</small></div>
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="ConfirmPassword" class="form-label"></label>
-                        <input asp-for="ConfirmPassword" class="form-control" placeholder="Confirm your password" />
+                        <label asp-for="ConfirmPassword" class="form-label"><small>Confirm Password</small></label>
+                        <input asp-for="ConfirmPassword" class="form-control form-control-sm" placeholder="Confirm your password" />
                         <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
                     </div>
 
                     <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-success btn-lg">
-                            <i class="fas fa-user-plus"></i> Create Account
+                        <button type="submit" class="btn btn-outline-dark">
+                            Create Account
                         </button>
                     </div>
                 </form>
@@ -61,9 +60,9 @@
                 <hr>
                 
                 <div class="text-center">
-                    <p class="mb-2">Already have an account?</p>
-                    <a asp-action="Login" asp-controller="Account" class="btn btn-outline-primary">
-                        <i class="fas fa-sign-in-alt"></i> Login
+                    <p><small>Already have an account?</small></p>
+                    <a asp-action="Login" asp-controller="Account" class="btn btn-outline-dark btn-sm">
+                        Login
                     </a>
                 </div>
             </div>

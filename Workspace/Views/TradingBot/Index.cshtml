@@ -29,7 +29,7 @@
     <div class="row">
         <!-- Available Trading Bot Templates -->
         <div class="col-12 mb-4">
-            <div class="card">
+            <div class="card card-blue-theme">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h6 class="mb-0">Available Bot Templates</h6>
                     <a href="@Url.Action("Create", "TradingBot")" class="btn btn-outline-dark btn-sm">
@@ -81,7 +81,7 @@
 
         <!-- User's Active Bots -->
         <div class="col-12 mb-4">
-            <div class="card">
+            <div class="card card-blue-theme">
                 <div class="card-header">
                     <h6 class="mb-0">Your Trading Bots</h6>
                 </div>
@@ -208,7 +208,7 @@
     <!-- Trading Sessions -->
     <div class="row">
         <div class="col-12">
-            <div class="card">
+            <div class="card card-blue-theme">
                 <div class="card-header">
                     <h6 class="mb-0">Recent Trading Sessions</h6>
                 </div>
@@ -457,6 +457,31 @@
         </div>
     </div>
 </div>
+
+<style>
+    /* Blue hover effect for table rows - stronger specificity */
+    .table-hover > tbody > tr:hover > * {
+        background-color: rgba(13, 110, 253, 0.1) !important;
+    }
+    
+    .table-hover tbody tr:hover {
+        --bs-table-hover-bg: rgba(13, 110, 253, 0.1) !important;
+        background-color: rgba(13, 110, 253, 0.1) !important;
+    }
+    
+    /* Blue hover effect for outline buttons - matching the row hover color */
+    .btn-outline-dark:hover {
+        background-color: rgba(13, 110, 253, 0.1) !important;
+        border-color: #0d6efd !important;
+        color: #0d6efd !important;
+    }
+    
+    .btn-outline-danger:hover {
+        background-color: #dc3545 !important;
+        border-color: #dc3545 !important;
+        color: white !important;
+    }
+</style>
 
 @section Scripts {
     <script>

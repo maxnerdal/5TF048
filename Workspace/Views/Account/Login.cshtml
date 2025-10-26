@@ -5,18 +5,17 @@
 
 <div class="row justify-content-center">
     <div class="col-md-6 col-lg-4">
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white text-center">
-                <h3 class="mb-0">🔐 Login</h3>
-            </div>
+        <div class="card border">
             <div class="card-body">
+                <h3 class="text-center mb-4">Login</h3>
+                
                 @if (!ViewData.ModelState.IsValid)
                 {
-                    <div class="alert alert-danger">
+                    <div class="alert alert-light border">
                         <ul class="mb-0">
                             @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
                             {
-                                <li>@error.ErrorMessage</li>
+                                <li><small>@error.ErrorMessage</small></li>
                             }
                         </ul>
                     </div>
@@ -27,25 +26,25 @@
                     <input type="hidden" asp-for="ReturnUrl" />
 
                     <div class="mb-3">
-                        <label asp-for="Username" class="form-label"></label>
-                        <input asp-for="Username" class="form-control" placeholder="Enter your username" />
+                        <label asp-for="Username" class="form-label"><small>Username</small></label>
+                        <input asp-for="Username" class="form-control form-control-sm" placeholder="Enter your username" />
                         <span asp-validation-for="Username" class="text-danger"></span>
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="Password" class="form-label"></label>
-                        <input asp-for="Password" class="form-control" placeholder="Enter your password" />
+                        <label asp-for="Password" class="form-label"><small>Password</small></label>
+                        <input asp-for="Password" class="form-control form-control-sm" placeholder="Enter your password" />
                         <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
 
                     <div class="mb-3 form-check">
                         <input asp-for="RememberMe" class="form-check-input" />
-                        <label asp-for="RememberMe" class="form-check-label"></label>
+                        <label asp-for="RememberMe" class="form-check-label"><small>Remember Me</small></label>
                     </div>
 
                     <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="fas fa-sign-in-alt"></i> Login
+                        <button type="submit" class="btn btn-outline-dark">
+                            Login
                         </button>
                     </div>
                 </form>
@@ -53,15 +52,15 @@
                 <hr>
                 
                 <div class="text-center">
-                    <p class="mb-2">Don't have an account?</p>
-                    <a asp-action="Register" asp-controller="Account" class="btn btn-outline-secondary">
-                        <i class="fas fa-user-plus"></i> Create Account
+                    <p><small>Don't have an account?</small></p>
+                    <a asp-action="Register" asp-controller="Account" class="btn btn-outline-dark btn-sm">
+                        Create Account
                     </a>
                 </div>
 
                 <!-- Demo credentials for testing -->
-                <div class="mt-4 p-3 bg-light rounded">
-                    <h6 class="text-muted">Demo Credentials:</h6>
+                <div class="mt-4 p-3 border rounded">
+                    <h6>Demo Credentials</h6>
                     <p class="small mb-1"><strong>Username:</strong> admin</p>
                     <p class="small mb-1"><strong>Password:</strong> password123</p>
                     <p class="small mb-0 text-muted">Or use: testuser / password123</p>
