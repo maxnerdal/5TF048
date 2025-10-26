@@ -26,10 +26,10 @@ namespace WebApp.Services
     public class BacktestingService : IBacktestingService
     {
         private readonly ApplicationDbContext _context;
-        private readonly ITradingBotService _tradingBotService;
+        private readonly ITradingBotDAL _tradingBotService;
         private readonly IBotConfigurationService _botConfigService;
 
-        public BacktestingService(ApplicationDbContext context, ITradingBotService tradingBotService, IBotConfigurationService botConfigService)
+        public BacktestingService(ApplicationDbContext context, ITradingBotDAL tradingBotService, IBotConfigurationService botConfigService)
         {
             _context = context;
             _tradingBotService = tradingBotService;

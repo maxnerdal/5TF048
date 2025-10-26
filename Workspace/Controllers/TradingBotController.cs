@@ -16,13 +16,13 @@ namespace WebApp.Controllers
     public class TradingBotController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly ITradingBotService _tradingBotService;
+        private readonly ITradingBotDAL _tradingBotService;
         private readonly IBacktestingService _backtestingService;
         private readonly IBotConfigurationService _botConfigService;
 
         public TradingBotController(
             ApplicationDbContext context,
-            ITradingBotService tradingBotService,
+            ITradingBotDAL tradingBotService,
             IBacktestingService backtestingService,
             IBotConfigurationService botConfigService)
         {

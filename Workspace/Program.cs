@@ -45,6 +45,7 @@ builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IBotConfigurationService, BotConfigurationService>();
 
 // Register trading bot and backtesting services (adapted for JSON configuration)
+builder.Services.AddScoped<ITradingBotDAL, TradingBotDAL>();
 builder.Services.AddScoped<ITradingBotService, TradingBotService>();
 builder.Services.AddScoped<IBacktestingService, BacktestingService>();
 
