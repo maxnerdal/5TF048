@@ -133,7 +133,7 @@
                                 <div class="mb-3">
                                     <label asp-for="Configuration.ExecutionMinute" class="form-label">Execution Minute</label>
                                     <select asp-for="Configuration.ExecutionMinute" class="form-select">
-                                        @for (int i = 0; i < 60; i += 15)
+                                        @for (int i = 0; i < 60; i++)
                                         {
                                             <option value="@i" selected="@(Model.Configuration.ExecutionMinute == i)">@($"{i:D2}")</option>
                                         }

@@ -56,6 +56,9 @@ builder.Services.AddScoped<IBacktestingService, BacktestingService>();
 // DISABLED: Uncomment the line below to enable automatic daily updates
 // builder.Services.AddHostedService<MarketDataUpdateService>();
 
+// Register live trading background service
+builder.Services.AddHostedService<LiveTradingBackgroundService>();
+
 // Configure Cookie Authentication
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>

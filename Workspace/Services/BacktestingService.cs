@@ -283,7 +283,7 @@ namespace WebApp.Services
                 var initialBalance = 1000000m; // $1M virtual balance
                 
                 // Create backtest session
-                var sessionId = await _tradingBotService.CreateTradingSessionAsync(userBotId, "Historical Backtest", initialBalance);
+                var sessionId = await _tradingBotService.CreateTradingSessionAsync(userBotId, "Backtest", initialBalance);
                 Console.WriteLine($"Created backtest session {sessionId} for period {startDate:yyyy-MM-dd} to {endDate:yyyy-MM-dd}");
                 
                 if (config.InvestmentAmount > 0)

@@ -39,7 +39,7 @@ namespace WebApp.Models
         public DateTime? EndTime { get; set; }
 
         /// <summary>
-        /// Session mode: "Backtest" or "Live"
+        /// Session mode: "Backtest" or "Paper Trade"
         /// </summary>
         [Required]
         [StringLength(20)]

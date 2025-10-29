@@ -62,6 +62,12 @@ namespace WebApp.Models
         public DateTime? LastRun { get; set; }
 
         /// <summary>
+        /// When this bot should execute next (UTC)
+        /// </summary>
+        [Column("NextExecutionTime")]
+        public DateTime? NextExecutionTime { get; set; }
+
+        /// <summary>
         /// Navigation property - User who owns this bot
         /// </summary>
         [ForeignKey("UserId")]

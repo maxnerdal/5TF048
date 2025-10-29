@@ -19,17 +19,20 @@ namespace WebApp.Controllers
         private readonly ITradingBotDAL _tradingBotService;
         private readonly IBacktestingService _backtestingService;
         private readonly IBotConfigurationService _botConfigService;
+        private readonly ITradingBotService _tradingBotExecutionService;
 
         public TradingBotController(
             ApplicationDbContext context,
             ITradingBotDAL tradingBotService,
             IBacktestingService backtestingService,
-            IBotConfigurationService botConfigService)
+            IBotConfigurationService botConfigService,
+            ITradingBotService tradingBotExecutionService)
         {
             _context = context;
             _tradingBotService = tradingBotService;
             _backtestingService = backtestingService;
             _botConfigService = botConfigService;
+            _tradingBotExecutionService = tradingBotExecutionService;
         }
 
         /// <summary>
@@ -328,6 +331,12 @@ namespace WebApp.Controllers
 
                 await _context.SaveChangesAsync();
 
+                // Set NextExecutionTime for active bots (especially DCA bots)
+                if (userBot.Status == "Active")
+                {
+                    await _tradingBotExecutionService.SetNextExecutionTimeAsync(userBot.UserBotId);
+                }
+
                 TempData["SuccessMessage"] = $"Trading bot '{model.BotName}' updated successfully!";
                 return RedirectToAction("Index");
             }
@@ -423,6 +432,9 @@ namespace WebApp.Controllers
                 var success = await _tradingBotService.StartUserBotAsync(userBotId);
                 if (success)
                 {
+                    // Set NextExecutionTime for scheduled bots (e.g., DCA)
+                    await _tradingBotExecutionService.SetNextExecutionTimeAsync(userBotId);
+                    
                     TempData["SuccessMessage"] = "Trading bot started successfully!";
                 }
                 else
